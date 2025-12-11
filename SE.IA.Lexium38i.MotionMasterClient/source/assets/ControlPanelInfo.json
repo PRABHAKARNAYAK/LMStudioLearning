@@ -1,0 +1,760 @@
+{
+  "operatingModes": [
+    {
+      "mode": 0,
+      "homingMethod": {
+        "index": "#x6098",
+        "sub_index": "00"
+      },
+      "homingMethods": [
+        {
+          "homingMethod": -4,
+          "description": "Home on offset (0x2005:4) before positive endstop",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "04"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "03"
+            }
+          ]
+        },
+        {
+          "homingMethod": -3,
+          "description": "Home on offset (0x2005:4) before negative endstop",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "04"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "03"
+            }
+          ]
+        },
+        {
+          "homingMethod": -2,
+          "description": "Home on index pulse before positive endstop",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "03"
+            }
+          ]
+        },
+        {
+          "homingMethod": -1,
+          "description": "Home on index pulse before negative endstop",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            },
+            {
+              "index": "#x2005",
+              "sub_index": "03"
+            }
+          ]
+        },
+        {
+          "homingMethod": 0,
+          "description": "No homing method assigned",
+          "inputParameters": []
+        },
+        {
+          "homingMethod": 1,
+          "description": "Home on index pulse before negative limit switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 2,
+          "description": "Home on index pulse before positive limit switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 3,
+          "description": "Home on index pulse before positive home switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 4,
+          "description": "Home on index pulse after positive home switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 5,
+          "description": "Home on index pulse before negative home switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 6,
+          "description": "Home on index pulse after negative home switch rising edge",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 7,
+          "description": "Home on index pulse before home switch rising edge - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 8,
+          "description": "Home on index pulse after home switch rising edge - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 9,
+          "description": "Home on index pulse before home switch falling edge - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 10,
+          "description": "Home on index pulse after home switch falling edge - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 11,
+          "description": "Home on index pulse before home switch rising edge - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 12,
+          "description": "Home on index pulse after home switch rising edge - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 13,
+          "description": "Home on index pulse before home switch falling edge - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 14,
+          "description": "Home on index pulse after home switch falling edge - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 17,
+          "description": "Home on negative limit switch rising edge (switch in inactive state)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 18,
+          "description": "Home on positive limit switch rising edge (switch in inactive state)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 19,
+          "description": "Home on positive home switch rising edge (switch in inactive state)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 20,
+          "description": "Home on positive home switch rising edge (switch in active State)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 21,
+          "description": "Home on negative home switch rising edge (switch in inactive state)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 22,
+          "description": "Home on negative home switch rising edge (switch in active State)",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 23,
+          "description": "Home on home switch rising edge (switch in inactive state) - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 24,
+          "description": "Home on home switch rising edge (switch in active State)- Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 25,
+          "description": "Home on home switch falling edge (switch in active State) - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 26,
+          "description": "Home on home switch falling edge (switch in inactive state) - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 27,
+          "description": "Home on home switch rising edge (switch in inactive state) - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 28,
+          "description": "Home on home switch rising edge (switch in active State) - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 29,
+          "description": "Home on home switch falling edge (switch in active State) - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 30,
+          "description": "Home on home switch falling edge (switch in inactive state) - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "01"
+            },
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 33,
+          "description": "Home on next index pulse - Negative movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 34,
+          "description": "Home on next index pulse - Positive movement direction",
+          "inputParameters": [
+            {
+              "index": "#x6099",
+              "sub_index": "02"
+            },
+            {
+              "index": "#x609A"
+            }
+          ]
+        },
+        {
+          "homingMethod": 35,
+          "description": "Home on current position (same as mode 37)",
+          "inputParameters": []
+        },
+        {
+          "homingMethod": 37,
+          "description": "Home on current position",
+          "inputParameters": []
+        }
+      ],
+      "monitoringParameters": [
+        {
+          "index": "#x6064",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x2005",
+          "sub_index": "01"
+        }
+      ],
+      "homeOffset": {
+        "index": "#x607C",
+        "sub_index": "00"
+      }
+    },
+    {
+      "mode": 1,
+      "description": "Position control mode",
+      "inputParameters": [
+        {
+          "index": "#x607A",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6083",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6084",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6081",
+          "sub_index": "00"
+        },
+        {
+          "name": "Interpret position as",
+          "index": "",
+          "sub_index": "",
+          "unit": "",
+          "min": "",
+          "max": "",
+          "defaultData": 1,
+          "mandatory": false,
+          "description": "<p>* If `relative` is true, the provided target is added to the current position (0x6064) and the result is set as the target position (0x607A).<br>* If `relative` is false, the target is used as the absolute target position (0x607A).</p>",
+          "inputType": "select",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "SINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "\"{\\t\\\"Absolute\\\": 0,\\t\\\"Relative\\\": 1\\t}\"",
+          "group": "",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": "0"
+        }
+      ],
+      "monitoringParameters": [
+        {
+          "index": "#x20F0",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6064",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x60FC",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x60F4",
+          "sub_index": "00"
+        }
+      ]
+    },
+    {
+      "mode": 2,
+      "description": "Velocity control mode",
+      "inputParameters": [
+        {
+          "index": "#x60FF",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6083",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6084",
+          "sub_index": "00"
+        }
+      ],
+      "monitoringParameters": [
+        {
+          "index": "#x20F0",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x606B",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x606C",
+          "sub_index": "00"
+        }
+      ]
+    },
+    {
+      "mode": 3,
+      "description": "Torque control mode",
+      "inputParameters": [
+        {
+          "index": "#x6071",
+          "sub_index": "00",
+          "unit": "‰"
+        },
+        {
+          "index": "#x6087",
+          "sub_index": "00"
+        }
+      ],
+      "monitoringParameters": [
+        {
+          "index": "#x20F0",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6074",
+          "sub_index": "00"
+        },
+        {
+          "index": "#x6077",
+          "sub_index": "00"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "tuningModes": [
+    {
+      "tuningMode": "Automatic",
+
+      "inputParameters": [
+        {
+          "name": "Cascaded controller configuration",
+          "index": "",
+          "sub_index": "",
+          "unit": "",
+          "min": 1,
+          "max": 2,
+          "defaultData": 1,
+          "mandatory": false,
+          "description": "<p>Cascaded controller configuration allows to change structure of the cascade controller. PI-P structure generally has faster response, overshoot but good tracking: zero steady state error for constant and ramp inputs.P-PI structure generally has damped response but worse tracking: steady state error is non-zero for ramp input.</p>",
+          "inputType": "select",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "SINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "\"{\\t\\\"PI-P\\\": 1,\\t\\\"P-PI\\\": 2\\t}\"",
+          "group": "Cascaded PID Tuning",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": 1
+        },
+        {
+          "name": "Cascaded PID Tuning - Damping Ratio",
+          "index": "",
+          "sub_index": "",
+          "unit": "",
+          "min": 0.4,
+          "max": 2,
+          "defaultData": 1,
+          "mandatory": false,
+          "description": "<p>Damping ratio is a parameter of an oscillatory system that reduces oscillations. In case of the cascade control loop, this parameter indirectly influences overshoot and rise time. Practically, the damping ratio effect depends on cascaded controller configuration. Generally, values > 1 can be used for removing overshoot but at cost of slower settling time, values < 1 can be used to achieve sharper response at cost of overshoot.</p>",
+          "inputType": "number",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "DINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "",
+          "group": "Cascaded PID Tuning",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": 1
+        },
+        {
+          "name": "Cascaded PID Tuning - Settling Time",
+          "index": "",
+          "sub_index": "",
+          "unit": "ms",
+          "min": 20,
+          "max": 500,
+          "defaultData": 200,
+          "mandatory": false,
+          "description": "<p>Cascaded controller configuration allows to change structure of the cascade controller. PI-P structure generally has faster response, overshoot but good tracking: zero steady state error for constant and ramp inputs.P-PI structure generally has damped response but worse tracking: steady state error is non-zero for ramp input.</p>",
+          "inputType": "number",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "DINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "",
+          "group": "Cascaded PID Tuning",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": 200
+        }
+      ],
+      "monitoringParameters": [
+        { "index": "#x2012", "sub_index": "01", "readOnly": true },
+        { "index": "#x2012", "sub_index": "02", "readOnly": true },
+        { "index": "#x2012", "sub_index": "04", "readOnly": true },
+        { "index": "#x2012", "sub_index": "05", "readOnly": true },
+        { "index": "#x2012", "sub_index": "06", "readOnly": true },
+        { "index": "#x2012", "sub_index": "08", "readOnly": true },
+        { "index": "#x6064", "sub_index": "00", "readOnly": true },
+        { "index": "#x60FC", "sub_index": "00", "readOnly": true },
+        { "index": "#x60F4", "sub_index": "00", "readOnly": true }
+      ]
+    },
+    {
+      "tuningMode": "Manual",
+      "inputParameters": [
+        { "index": "#x2012", "sub_index": "01" },
+        { "index": "#x2012", "sub_index": "02" },
+        { "index": "#x2012", "sub_index": "03" },
+        { "index": "#x2012", "sub_index": "04" },
+        { "index": "#x2012", "sub_index": "05" },
+        { "index": "#x2012", "sub_index": "06" },
+        { "index": "#x2012", "sub_index": "07" },
+        { "index": "#x2012", "sub_index": "08" }
+      ],
+      "monitoringParameters": [
+        { "index": "#x6064", "sub_index": "00", "readOnly": true },
+        { "index": "#x60FC", "sub_index": "00", "readOnly": true },
+        { "index": "#x60F4", "sub_index": "00", "readOnly": true }
+      ]
+    }
+  ]
+}

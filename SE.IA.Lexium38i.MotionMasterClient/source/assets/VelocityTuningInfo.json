@@ -1,0 +1,76 @@
+{
+  "tuningModes": [
+    {
+      "tuningMode": "Automatic",
+
+      "inputParameters": [
+        {
+          "name": "Velocity Tuning - Damping Ratio",
+          "index": "",
+          "sub_index": "",
+          "unit": "",
+          "min": 0.4,
+          "max": 2,
+          "defaultData": 0.7,
+          "mandatory": false,
+          "description": "Damping ratio is a parameter of an oscillatory system that reduces oscillations.<br><br>In case of the velocity control loop, this parameter governs overshoot and rise time. Practically, the damping ratio can be divided into two regions:<br><br><strong>Underdamped &lt; 1</strong> – overshoot is allowed, sharper response<br><strong>Overdamped &gt; 1</strong> – no overshoot, less sharp response<br><br>Settling time in both cases is ideally the same.",
+          "inputType": "number",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "DINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "",
+          "group": "Velocity Tuning",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": 0.7
+        },
+        {
+          "name": "Velocity Tuning - Bandwidth",
+          "index": "",
+          "sub_index": "",
+          "unit": "Hz",
+          "min": 0.2,
+          "max": 100,
+          "defaultData": 5,
+          "mandatory": false,
+          "description": "Bandwidth or so-called -3 dB bandwidth is a characteristic of a control loop that characterises sharpness of the control loop.<br><br>Basically, it is a frequency the system may follow with 71% of amplitude.",
+          "inputType": "number",
+          "isSmm": false,
+          "bitSize": 8,
+          "esiType": "DINT",
+          "canBeMappedAsRxPdo": false,
+          "canBeMappedAsTxPdo": false,
+          "recordDescription": "",
+          "options": "",
+          "group": "Cascaded PID Tuning",
+          "typeValue": "",
+          "originalOptions": "",
+          "value": 5
+        }
+      ],
+      "monitoringParameters": [
+        { "index": "#x2011", "sub_index": "01", "readOnly": true },
+        { "index": "#x2011", "sub_index": "02", "readOnly": true },
+        { "index": "#x2011", "sub_index": "04", "readOnly": true },
+        { "index": "#x606C", "sub_index": "00", "readOnly": true },
+        { "index": "#x606B", "sub_index": "00", "readOnly": true }
+      ]
+    },
+    {
+      "tuningMode": "Manual",
+      "inputParameters": [
+        { "index": "#x2011", "sub_index": "01" },
+        { "index": "#x2011", "sub_index": "02" },
+        { "index": "#x2011", "sub_index": "03" },
+        { "index": "#x2011", "sub_index": "04" }
+      ],
+      "monitoringParameters": [
+        { "index": "#x606C", "sub_index": "00", "readOnly": true },
+        { "index": "#x606B", "sub_index": "00", "readOnly": true }
+      ]
+    }
+  ]
+}

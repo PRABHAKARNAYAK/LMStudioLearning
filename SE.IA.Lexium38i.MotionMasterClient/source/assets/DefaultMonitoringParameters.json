@@ -1,0 +1,24 @@
+{
+  "monitoringParameters": [
+    {
+      "index": "#x6041",
+      "sub_index": "00"
+    },
+    {
+      "index": "#x6060",
+      "sub_index": "00"
+    },
+    {
+      "index": "#x2030",
+      "sub_index": "01"
+    },
+    {
+      "index": "#x2031",
+      "sub_index": "01"
+    },
+    {
+      "index": "#x6077",
+      "sub_index": "00"
+    }
+  ]
+}
