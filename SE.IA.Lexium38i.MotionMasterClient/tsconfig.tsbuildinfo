@@ -1,0 +1,14 @@
+{
+  "root": [
+    "./source/server.ts",
+    "./source/controllers/motionmasterconnectdisconnect.ts",
+    "./source/controllers/startmotionmasterserver.ts",
+    "./source/controllers/motionmasterclientapi.ts",
+    "./source/controllers/posts.ts",
+    "./source/routes/route.ts",
+    "./source/services/lexiumlogger.ts",
+    "./source/services/motionmasterclientinstance.ts",
+    "./source/services/motionmasterprocess.ts"
+  ],
+  "version": "5.7.2"
+}

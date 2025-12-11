@@ -1,0 +1,16 @@
+{
+  "tuningModes": [
+    {
+      "tuningMode": "Manual",
+      "inputParameters": [
+        { "index": "#x2010", "sub_index": "09" },
+        { "index": "#x2010", "sub_index": "0A" },
+        { "index": "#x2010", "sub_index": "0B" }
+      ],
+      "monitoringParameters": [
+        { "index": "#x6077", "sub_index": "00", "readOnly": true },
+        { "index": "#x6074", "sub_index": "00", "readOnly": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package SchneiderElectric.Automation.Sodb.Messages;
+
+// Define the Property message
+message Property {
+    string title = 1;
+    string description = 2;
+}
+
+// Define the Parameter message
+message Parameter {    
+    string index = 1;
+    string sub_index = 2; // optional, as it may not always be present
+    string unit = 3;
+    double min = 4;
+    double max = 5;
+    double defaultData = 6;
+    bool mandatory = 7;
+    string description = 8;
+    string inputType = 9;
+    bool isSmm = 10;
+    int32 bitSize = 11;
+    string esiType = 12;
+    bool canBeMappedAsRxPdo = 13;
+    bool canBeMappedAsTxPdo = 14;
+    string recordDescription = 15;
+    string options = 16;
+    string group = 17;
+    string typeValue = 18;    
+    string originalOptions = 19;
+    string name = 20;
+    string value = 21;
+    bool readOnly = 22;
+}
+
+// Define the SubGroup message
+message SubGroup {
+    string title = 1;
+    repeated Property properties = 2; // optional, as it may not always be present
+    repeated Parameter parameters = 3;
+}
+
+// Define the Group message
+message Group {
+    string id = 1;
+    repeated SubGroup sub_groups = 2;
+}
+
+// Define the Root message to hold all groups
+message Groups {
+    map<string, Group> groups = 1; // Map to allow dynamic group names
+}
+
+message ParamRequest{
+    string groupId = 1;
+    string grpcEndPoint = 2;
+}
+
+message ParamResponse{
+    string groupNodes = 1;
+    Group groupInfo = 2;
+}
+ 
+service GroupInfoService
+{
+	rpc GetParametersDetail(ParamRequest) returns (ParamResponse);
+}

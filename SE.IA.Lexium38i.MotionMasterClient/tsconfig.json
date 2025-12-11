@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "forceConsistentCasingInFileNames": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "outDir": "./dist",
+    "rootDir": "./source",
+    "target": "es6",
+    "skipLibCheck": true,
+    "strict": false,
+    "sourceMap": true,
+    "strictNullChecks": true
+  },
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/tests/**"]
+}

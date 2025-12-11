@@ -1,0 +1,1347 @@
+{
+  "Groups": {
+    "Motor & Transmission": {
+      "Id": "Motor & Transmission",
+      "SubGroups": [
+        {
+          "Title": "Motor manufacturer defined parameters",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2003",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2003",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2003",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2003",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x6075"
+            },
+            {
+              "Index": "#x6076"
+            }
+          ]
+        },
+        {
+          "Title": "Motor user defined parameters",
+          "Parameters": [
+            {
+              "Index": "#x6072"
+            },
+            {
+              "Index": "#x6073"
+            },
+            {
+              "Index": "#x6080"
+            }
+          ]
+        },
+        {
+          "Title": "Transmission",
+          "Parameters": [
+            {
+              "Index": "#x6091",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x6091",
+              "SubIndex": "02"
+            }
+          ]
+        }
+      ]
+    },
+    "Brake": {
+      "Id": "Brake",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2004",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "06",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "07"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "08"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "09"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "0A"
+            },
+            {
+              "Index": "#x2004",
+              "SubIndex": "0B"
+            }
+          ]
+        }
+      ]
+    },
+    "Feedback & IO": {
+      "Id": "Feedback & IO",
+      "SubGroups": [
+        {
+          "Title": "Motion Feedback",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x60A9"
+            }
+          ]
+        },
+        {
+          "Title": "Digital IO",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2210",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "06"
+            },
+            {
+              "Index": "#x2210",
+              "SubIndex": "07"
+            }
+          ]
+        },
+        {
+          "Title": "Analog Input",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2038",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "06"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "07"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "08"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "09"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "0A"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "0B"
+            },
+            {
+              "Index": "#x2038",
+              "SubIndex": "0C"
+            }
+          ]
+        }
+      ]
+    },
+    "Commutation & PWM": {
+      "Id": "Commutation & PWM",
+      "SubGroups": [
+        {
+          "Title": "Commutation Offset",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2001",
+              "SubIndex": "00"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2009",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2009",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2009",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2009",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2009",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2009",
+              "SubIndex": "06"
+            }
+          ]
+        },
+        {
+          "Title": "Additional Commutation Settings",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2003",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "08"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "09"
+            }
+          ]
+        }
+      ]
+    },
+    "Current & Torque Control": {
+      "Id": "Current & Torque Control",
+      "SubGroups": [
+        {
+          "Title": "Torque Controller",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2010",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "0A"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "0B"
+            }
+          ]
+        },
+        {
+          "Title": "Field Weakening",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2010",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "06"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "07"
+            }
+          ]
+        },
+        {
+          "Title": "Cogging Torque Compensation",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2008",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2008",
+              "SubIndex": "02"
+            }
+          ]
+        }
+      ]
+    },
+    "Velocity Control": {
+      "Id": "Velocity Control",
+      "SubGroups": [
+        {
+          "Title": "Velocity Controller",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2011",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2011",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2011",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2011",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2011",
+              "SubIndex": "05"
+            }
+          ]
+        },
+        {
+          "Title": "Velocity Feedback Filter",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2021",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2021",
+              "SubIndex": "02"
+            }
+          ]
+        }
+      ]
+    },
+    "Position Control": {
+      "Id": "Position Control",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2002"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2012",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "06"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "07"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "08"
+            },
+            {
+              "Index": "#x2012",
+              "SubIndex": "09"
+            },
+            {
+              "Index": "#x607E"
+            }
+          ]
+        },
+        {
+          "Title": "Position Feedback Filter",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2022",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2022",
+              "SubIndex": "02"
+            }
+          ]
+        },
+        {
+          "Title": "Velocity Feed-forward",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2015",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2015",
+              "SubIndex": "02"
+            }
+          ]
+        }
+      ]
+    },
+    "Gain Scheduling": {
+      "Id": "Gain Scheduling",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2013",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "05"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "06"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "07"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "08"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "09"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0A"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0B"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0C"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0D"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0E"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "0F"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "10"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "11"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "12"
+            },
+            {
+              "Index": "#x2013",
+              "SubIndex": "13"
+            }
+          ]
+        }
+      ]
+    },
+    "Filters": {
+      "Id": "Filters",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2021",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2021",
+              "SubIndex": "02"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2022",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2022",
+              "SubIndex": "02"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2023",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2023",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2023",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2023",
+              "SubIndex": "04"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2027",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2027",
+              "SubIndex": "02"
+            }
+          ]
+        }
+      ]
+    },
+    "Profiled Motion": {
+      "Id": "Profiled Motion",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x6081"
+            },
+            {
+              "Index": "#x6083"
+            },
+            {
+              "Index": "#x6084"
+            },
+            {
+              "Index": "#x6086"
+            },
+            {
+              "Index": "#x6087"
+            },
+            {
+              "Index": "#x6088"
+            }
+          ]
+        }
+      ]
+    },
+    "Homing": {
+      "Id": "Homing",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x607C"
+            },
+            {
+              "Index": "#x6098"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x6099",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x6099",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x609A"
+            }
+          ]
+        }
+      ]
+    },
+    "Protection & Motion Limits": {
+      "Id": "Protection & Motion Limits",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2006",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2006",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2006",
+              "SubIndex": "03"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x200A",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x200A",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x200A",
+              "SubIndex": "03",
+              "readOnly": true
+            },
+            {
+              "Index": "#x200A",
+              "SubIndex": "04",
+              "readOnly": true
+            },
+            {
+              "Index": "#x200A",
+              "SubIndex": "05"
+            }
+          ]
+        },
+        {
+          "Title": "Motion Limits",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x607B",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x607B",
+              "SubIndex": "02",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x607D",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x607D",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x6080"
+            },
+            {
+              "Index": "#x6085"
+            }
+          ]
+        }
+      ]
+    },
+    "Monitoring": {
+      "Id": "Monitoring",
+      "SubGroups": [
+        {
+          "Title": "Position Supervision",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x6062",
+              "readOnly": true
+            },
+            {
+              "Index": "#x60FC",
+              "readOnly": true
+            },
+            {
+              "Index": "#x60F4",
+              "readOnly": true
+            },
+            {
+              "Index": "#x6065"
+            },
+            {
+              "Index": "#x6066"
+            },
+            {
+              "Index": "#x6067"
+            },
+            {
+              "Index": "#x6068"
+            }
+          ]
+        },
+        {
+          "Title": "Velocity Supervision",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x606B",
+              "readOnly": true
+            },
+            {
+              "Index": "#x606D"
+            },
+            {
+              "Index": "#x606E"
+            },
+            {
+              "Index": "#x606F"
+            },
+            {
+              "Index": "#x6070"
+            }
+          ]
+        },
+        {
+          "Title": "Torque Supervision",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x6074",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2014",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x2014",
+              "SubIndex": "02"
+            }
+          ]
+        },
+        {
+          "Title": "Other Supervision",
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2030",
+              "SubIndex": "01",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2031",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x6079",
+              "readOnly": true
+            },
+
+            {
+              "Index": "#x60FA",
+              "readOnly": true
+            }
+          ]
+        }
+      ]
+    },
+    "Functional Safety": {
+      "Id": "Functional Safety",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2611",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2611",
+              "SubIndex": "02",
+              "readOnly": true
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x6621",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x6621",
+              "SubIndex": "02",
+              "readOnly": true
+            }
+          ]
+        }
+      ]
+    },
+    "Others": {
+      "Id": "Others",
+      "SubGroups": [
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1005"
+            },
+            {
+              "Index": "#x1006"
+            },
+            {
+              "Index": "#x100C"
+            },
+            {
+              "Index": "#x100D"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1010",
+              "SubIndex": "01"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1011",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1011",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x1011",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x1011",
+              "SubIndex": "04"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1016",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1017"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1018",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x1018",
+              "SubIndex": "02",
+              "readOnly": true
+            },
+            {
+              "Index": "#x1018",
+              "SubIndex": "03",
+              "readOnly": true
+            },
+            {
+              "Index": "#x1018",
+              "SubIndex": "04",
+              "readOnly": true
+            },
+            {
+              "Index": "#x1019"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1400",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1400",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x1400",
+              "SubIndex": "03"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1401",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1401",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x1401",
+              "SubIndex": "03"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1402",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1402",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x1402",
+              "SubIndex": "03"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x1403",
+              "SubIndex": "01"
+            },
+            {
+              "Index": "#x1403",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x1403",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2000"
+            }
+          ]
+        },
+        {
+          "Properties": [
+            {
+              "Title": "",
+              "Description": ""
+            }
+          ],
+          "Parameters": [
+            {
+              "Index": "#x2005",
+              "SubIndex": "01",
+              "readOnly": true
+            },
+            {
+              "Index": "#x2005",
+              "SubIndex": "02"
+            },
+            {
+              "Index": "#x2005",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2005",
+              "SubIndex": "04"
+            },
+            {
+              "Index": "#x2010",
+              "SubIndex": "03"
+            },
+            {
+              "Index": "#x2040",
+              "readOnly": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
