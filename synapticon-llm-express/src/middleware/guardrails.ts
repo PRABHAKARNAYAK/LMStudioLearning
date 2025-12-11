@@ -1,0 +1,1 @@
+import {Request,Response,NextFunction} from 'express'; const P=[/bypass\s*interlocks/i,/disable\s*safety/i,/write\s*parameter/i,/force\s*motion/i,/override\s*limits/i]; export function guardrails(req:Request,res:Response,next:NextFunction){const t=JSON.stringify(req.body||''); if(P.find(p=>p.test(t))) return res.status(400).json({error:'Rejected by safety guardrails.'}); next();}

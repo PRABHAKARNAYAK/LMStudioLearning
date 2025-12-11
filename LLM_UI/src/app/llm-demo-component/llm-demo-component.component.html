@@ -1,0 +1,28 @@
+<section class="llm-demo">
+  <h2>LEXIUM38i Copilot</h2>
+
+  <form (ngSubmit)="ask()">
+    <label for="q">Question</label>
+    <textarea
+      id="q"
+      [(ngModel)]="question"
+      name="question"
+      rows="4"
+      class="w-100"
+      placeholder="For Lexium38i, what are typical causes of alarm E123 and which section covers it?"
+    ></textarea>
+    <button type="submit" [disabled]="loading">Ask</button>
+  </form>
+
+  <div *ngIf="loading">Thinking…</div>
+
+  <h3 *ngIf="answer">Answer</h3>
+  <pre *ngIf="answer" class="answer">{{ answer }}</pre>
+
+  <p *ngIf="error" class="error">Error: {{ error }}</p>
+
+  <details *ngIf="debug">
+    <summary>Debug (LM Studio raw responses)</summary>
+    <pre>{{ debug | json }}</pre>
+  </details>
+</section>
