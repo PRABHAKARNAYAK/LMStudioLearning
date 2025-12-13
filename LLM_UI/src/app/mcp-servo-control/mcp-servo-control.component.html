@@ -1,0 +1,279 @@
+<div class="mcp-servo-control">
+  <h1>MCP Servo Control</h1>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    <span>{{ error }}</span>
+    <button (click)="clearMessages()" class="close-btn">×</button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span>{{ successMessage }}</span>
+    <button (click)="clearMessages()" class="close-btn">×</button>
+  </div>
+
+  <!-- Device List -->
+  <section class="device-list">
+    <div class="section-header">
+      <h2>Available Devices</h2>
+      <button (click)="scanDevices()" class="btn btn-secondary">
+        🔄 Refresh
+      </button>
+    </div>
+
+    <div class="devices-grid">
+      <div
+        *ngFor="let device of devices"
+        class="device-card"
+        [class.selected]="selectedDevice?.id === device.id"
+        (click)="selectDevice(device)"
+      >
+        <h3>{{ device.id }}</h3>
+        <p *ngIf="device.model"><strong>Model:</strong> {{ device.model }}</p>
+        <p *ngIf="device.port"><strong>Port:</strong> {{ device.port }}</p>
+        <span class="status-badge" [class.online]="device.status === 'online'">
+          {{ device.status || "unknown" }}
+        </span>
+      </div>
+
+      <div *ngIf="devices.length === 0" class="no-devices">
+        <p>No devices found. Click "Refresh" to scan for devices.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Device Details -->
+  <div *ngIf="selectedDevice" class="device-details">
+    <!-- Status Section -->
+    <section class="status-section">
+      <div class="section-header">
+        <h2>Device Status</h2>
+        <div class="controls">
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="autoRefresh"
+              (change)="toggleAutoRefresh()"
+            />
+            Auto-refresh
+          </label>
+          <button (click)="loadStatus()" class="btn btn-small">Refresh</button>
+        </div>
+      </div>
+
+      <div *ngIf="status" class="status-grid">
+        <div class="status-item">
+          <label>State:</label>
+          <span class="value state-badge" [class]="status.state">{{
+            status.state || "unknown"
+          }}</span>
+        </div>
+        <div class="status-item">
+          <label>Position:</label>
+          <span class="value">{{ status.position?.toFixed(2) || "N/A" }}</span>
+        </div>
+        <div class="status-item">
+          <label>Velocity:</label>
+          <span class="value">{{ status.velocity?.toFixed(2) || "N/A" }}</span>
+        </div>
+        <div class="status-item">
+          <label>Torque:</label>
+          <span class="value">{{ status.torque?.toFixed(2) || "N/A" }}</span>
+        </div>
+        <div
+          class="status-item"
+          *ngIf="status.errors && status.errors.length > 0"
+        >
+          <label>Errors:</label>
+          <span class="value error">{{ status.errors.join(", ") }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Diagnostics Section -->
+    <section class="diagnostics-section" *ngIf="diagnostics">
+      <h2>Diagnostics</h2>
+      <div class="diagnostics-grid">
+        <div class="diag-item" *ngIf="diagnostics.firmware">
+          <label>Firmware:</label>
+          <span>{{ diagnostics.firmware }}</span>
+        </div>
+        <div class="diag-item" *ngIf="diagnostics.temperatureC !== undefined">
+          <label>Temperature:</label>
+          <span>{{ diagnostics.temperatureC }}°C</span>
+        </div>
+        <div class="diag-item" *ngIf="diagnostics.supplyVoltage !== undefined">
+          <label>Supply Voltage:</label>
+          <span>{{ diagnostics.supplyVoltage }}V</span>
+        </div>
+        <div
+          class="diag-item"
+          *ngIf="diagnostics.faultCodes && diagnostics.faultCodes.length > 0"
+        >
+          <label>Fault Codes:</label>
+          <span class="error">{{ diagnostics.faultCodes.join(", ") }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Control Actions -->
+    <section class="control-section">
+      <h2>Basic Controls</h2>
+      <div class="button-group">
+        <button (click)="homeDevice()" class="btn btn-primary">
+          🏠 Home Device
+        </button>
+        <button (click)="stopDevice(false)" class="btn btn-warning">
+          ⏹ Stop
+        </button>
+        <button (click)="stopDevice(true)" class="btn btn-danger">
+          🚨 Emergency Stop
+        </button>
+      </div>
+    </section>
+
+    <!-- Move Command -->
+    <section class="move-section">
+      <h2>Move to Position</h2>
+      <form (ngSubmit)="moveToPosition()" class="form-inline">
+        <div class="form-group">
+          <label>Position:</label>
+          <input
+            type="number"
+            [(ngModel)]="moveCommand.position"
+            name="position"
+            step="0.1"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Speed:</label>
+          <input
+            type="number"
+            [(ngModel)]="moveCommand.speed"
+            name="speed"
+            step="0.1"
+          />
+        </div>
+        <div class="form-group">
+          <label>Unit:</label>
+          <select [(ngModel)]="moveCommand.unit" name="unit">
+            <option value="mm">mm</option>
+            <option value="deg">deg</option>
+            <option value="steps">steps</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">▶ Move</button>
+      </form>
+    </section>
+
+    <!-- Jog Command -->
+    <section class="jog-section">
+      <h2>Jog</h2>
+      <form (ngSubmit)="jogDevice()" class="form-inline">
+        <div class="form-group">
+          <label>Direction:</label>
+          <select [(ngModel)]="jogCommand.direction" name="direction">
+            <option value="positive">Positive</option>
+            <option value="negative">Negative</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Speed:</label>
+          <input
+            type="number"
+            [(ngModel)]="jogCommand.speed"
+            name="speed"
+            step="0.1"
+          />
+        </div>
+        <div class="form-group">
+          <label>Duration (ms):</label>
+          <input
+            type="number"
+            [(ngModel)]="jogCommand.durationMs"
+            name="duration"
+            step="100"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">▶ Jog</button>
+      </form>
+    </section>
+
+    <!-- Parameter Setting -->
+    <section class="param-section">
+      <h2>Set Parameter</h2>
+      <form (ngSubmit)="setParameter()" class="form-inline">
+        <div class="form-group">
+          <label>Name:</label>
+          <input
+            type="text"
+            [(ngModel)]="paramName"
+            name="paramName"
+            placeholder="Parameter name"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label>Value:</label>
+          <input
+            type="text"
+            [(ngModel)]="paramValue"
+            name="paramValue"
+            placeholder="Value"
+            required
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Set</button>
+      </form>
+    </section>
+
+    <!-- Trajectory -->
+    <section class="trajectory-section">
+      <h2>Trajectory</h2>
+
+      <div class="trajectory-points">
+        <div
+          *ngFor="let point of trajectoryPoints; let i = index"
+          class="trajectory-point"
+        >
+          <span class="point-number">{{ i + 1 }}</span>
+          <div class="form-group">
+            <label>Time (ms):</label>
+            <input type="number" [(ngModel)]="point.timeMs" step="100" />
+          </div>
+          <div class="form-group">
+            <label>Position:</label>
+            <input type="number" [(ngModel)]="point.position" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>Speed:</label>
+            <input type="number" [(ngModel)]="point.speed" step="0.1" />
+          </div>
+          <button
+            *ngIf="trajectoryPoints.length > 1"
+            (click)="removeTrajectoryPoint(i)"
+            class="btn btn-danger btn-small"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button (click)="addTrajectoryPoint()" class="btn btn-secondary">
+          + Add Point
+        </button>
+        <button (click)="executeTrajectory()" class="btn btn-primary">
+          ▶ Execute Trajectory
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

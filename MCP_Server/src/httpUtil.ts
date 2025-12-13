@@ -1,16 +1,15 @@
-
 import "dotenv/config";
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:4000";
 const API_TOKEN = process.env.API_TOKEN ?? "";
 const REQUEST_TIMEOUT_MS = parseInt(process.env.REQUEST_TIMEOUT_MS ?? "15000", 10);
 
-export async function callApi<T>(path: string, init?: RequestInit): Promise<{ data: T; status: number }>{
+export async function callApi<T>(path: string, init?: RequestInit): Promise<{ data: T; status: number }> {
   const url = `${API_BASE_URL}${path}`;
-  const headers: Record<string,string> = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : {}),
-    ...(init?.headers as Record<string,string> ?? {})
+    ...((init?.headers as Record<string, string>) ?? {}),
   };
 
   const controller = new AbortController();
@@ -18,6 +17,7 @@ export async function callApi<T>(path: string, init?: RequestInit): Promise<{ da
   try {
     const res = await fetch(url, { ...init, headers, signal: controller.signal });
     const text = await res.text();
+    console.log(`API Response from ${url}:`, text);
     let json: any;
     try {
       if (text.trim().startsWith("<!DOCTYPE html") || /<pre[\s\S]*?>[\s\S]*?<\/pre>/i.test(text)) {
