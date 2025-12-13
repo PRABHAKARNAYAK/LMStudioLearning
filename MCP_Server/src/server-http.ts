@@ -13,6 +13,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, mcp-session-id");
+  res.setHeader("Access-Control-Expose-Headers", "mcp-session-id");
   if (req.method === "OPTIONS") return res.status(200).end();
   next();
 });
@@ -22,7 +23,37 @@ const sessions = new Map<string, StreamableHTTPServerTransport>();
 
 // Main MCP endpoint
 app.all("/mcp", async (req, res) => {
+  // Patch res.send and res.end to log response bodies
+  const originalSend = res.send.bind(res);
+  res.send = function (body) {
+    console.log("[MCP /mcp] res.send called with:", body);
+    return originalSend(body);
+  };
+  const originalEnd = res.end.bind(res);
+  res.end = function (...args: any[]) {
+    if (args.length > 0 && args[0] !== undefined) {
+      console.log("[MCP /mcp] res.end called with:", args[0]);
+    }
+    // @ts-ignore
+    return originalEnd(...args);
+  };
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+  // Debug: log incoming request and session
+  const logPrefix = `[MCP /mcp]`;
+  console.log(`${logPrefix} Incoming request`, {
+    method: req.method,
+    headers: req.headers,
+    body: req.body,
+    sessionId,
+  });
+
+  // Capture response headers before sending
+  const originalSetHeader = res.setHeader.bind(res);
+  res.setHeader = function (name, value) {
+    console.log(`${logPrefix} Response header set:`, name, value);
+    return originalSetHeader(name, value);
+  };
 
   try {
     let transport = sessionId ? sessions.get(sessionId) : undefined;
@@ -35,6 +66,19 @@ app.all("/mcp", async (req, res) => {
       });
 
       await mcpServer.connect(transport);
+      res.setHeader("Content-Type", "application/json");
+      // Always set mcp-session-id header if available
+      if (transport.sessionId) {
+        res.setHeader("mcp-session-id", transport.sessionId);
+      }
+
+      // Capture the response body by monkey-patching res.json
+      const originalJson = res.json.bind(res);
+      res.json = function (body) {
+        console.log("[MCP /mcp] Sending response body (initialize):", body);
+        return originalJson(body);
+      };
+
       await transport.handleRequest(req, res, req.body);
 
       if (transport.sessionId) {
@@ -47,6 +91,7 @@ app.all("/mcp", async (req, res) => {
     // Handle existing session
     if (transport) {
       if (req.method === "DELETE") {
+        res.setHeader("Content-Type", "application/json");
         await transport.handleRequest(req, res, undefined);
         transport.close();
         sessions.delete(sessionId!);
@@ -56,11 +101,13 @@ app.all("/mcp", async (req, res) => {
         res.setHeader("Cache-Control", "no-cache");
         await transport.handleRequest(req, res, undefined);
       } else {
+        res.setHeader("Content-Type", "application/json");
         await transport.handleRequest(req, res, req.body);
       }
       return;
     }
 
+    res.setHeader("Content-Type", "application/json");
     res.status(400).json({
       jsonrpc: "2.0",
       error: { code: -32000, message: "Session not found" },
