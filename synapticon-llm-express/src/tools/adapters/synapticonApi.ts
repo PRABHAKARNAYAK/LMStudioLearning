@@ -20,7 +20,7 @@ export interface ManualChunk {
   page?: number;
 }
 function base() {
-  const url = process.env.EXT_API_BASE || "http://localhost:4000";
+  const url = process.env.EXT_API_BASE || "http://localhost:4001";
   return url.replace(/\/$/, "");
 }
 async function get(path: string) {
