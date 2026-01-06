@@ -14,6 +14,7 @@ import { IGroup, IGroupNodeInfo, IParameter, ISubGroup } from "@LXM38I/se.ia.lex
 import { ParametersProcessingHandler } from "../services/ParametersProcessingHandler";
 import { HomingHandler } from "../services/HomingHandler";
 import { HomingProcedureStatusMapper } from "../model/HomingProcedureStatusMapper";
+import { NodeGroups, NodeGroup, NodeSubGroup, NodeParameter } from "../model/Lexium38iGroups";
 
 const groupInfoJsonFilePath = path.join(__dirname, "./assets/Lexium38iGroupInfo.json");
 
@@ -234,7 +235,7 @@ class Lexium38iParameterInfoApi {
     const groupNodesInfo: IGroupNodeInfo[] = [];
     try {
       const nodeGroupsData = this.parametersProcessingHandler.getJsonData<NodeGroups>(groupInfoJsonFilePath);
-      for (const nodeGroup of Object.values(nodeGroupsData.Groups)) {
+      for (const nodeGroup of Object.values(nodeGroupsData)) {
         const subGroups = nodeGroup.SubGroups.map((subGroup: NodeSubGroup) => subGroup.Title).filter(Boolean);
         groupNodesInfo.push({ id: nodeGroup.Id, subGroups });
       }

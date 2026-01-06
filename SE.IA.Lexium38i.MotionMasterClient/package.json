@@ -22,6 +22,7 @@
     "@grpc/proto-loader": "^0.7.13",
     "@improbable-eng/grpc-web": "^0.15.0",
     "@LXM38I/se.ia.lexium38i.common.model": "^0.0.0-alpha.29",
+    "@modelcontextprotocol/sdk": "^1.22.0",
     "@SET/se.ia.maf.servicelocator": "2.0.1-release.224",
     "@types/express": "^5.0.0",
     "@types/google-protobuf": "^3.15.12",
@@ -42,7 +43,8 @@
     "utf-8-validate": "^6.0.5",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",

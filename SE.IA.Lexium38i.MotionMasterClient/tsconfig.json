@@ -1,15 +1,18 @@
 {
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
+    "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./source",
-    "target": "es6",
+    "target": "es2022",
     "skipLibCheck": true,
     "strict": false,
     "sourceMap": true,
     "strictNullChecks": true
   },
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/tests/**"]
+  "include": ["source/**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/*.spec.ts", "**/tests/**", "coverage/**", "dist/**", "babel.config.js", "jest.config.js", "prebuild.js", "webpack.config.js"]
 }

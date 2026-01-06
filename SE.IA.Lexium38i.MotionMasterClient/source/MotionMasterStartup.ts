@@ -2,10 +2,12 @@ import { ProtocolEndPoint, ServiceLocator } from "@SET/se.ia.maf.servicelocator"
 import motionMasterClientRoutes from "./controllers/motionMasterClientApi";
 import Lexium38iParameterInfoApi from "./controllers/Lexium38iParameterInfoApi";
 import motionMasterClientApiRouter from "./routes/motionMasterClientApiRoute";
-import { createServer, Server as HttpServer } from "http";
+import { createServer, Server as HttpServer } from "node:http";
 import express, { Express } from "express";
 import path from "node:path";
 import cors from "cors";
+import { randomUUID } from "node:crypto";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 const protoFilePath = path.join(__dirname, "./assets/protos/GroupInfo.proto");
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
@@ -14,6 +16,7 @@ import { setIO } from "./webSockets/ioManager";
 import startDiscoveryRoute from "./routes/StartDiscoveryRoute";
 import { WebSocketManager } from "./webSockets/webSocketManager";
 import { LexiumLogger } from "./services/LexiumLogger";
+import { createMcpServer } from "./mcpServer";
 
 export class MotionMasterStartup {
   private readonly _port: number = 8036;
@@ -26,6 +29,8 @@ export class MotionMasterStartup {
   private readonly _grpcServer;
   private readonly _socketIoServer: SocketIoServer;
   private readonly _httpServer: HttpServer;
+  private readonly _mcpServer: ReturnType<typeof createMcpServer>;
+  private readonly _mcpSessions: Map<string, StreamableHTTPServerTransport> = new Map();
 
   private readonly _protocolEndPoint: ProtocolEndPoint;
   private readonly _grpcprotocolEndPoint: ProtocolEndPoint;
@@ -55,6 +60,13 @@ export class MotionMasterStartup {
 
     this._grpcServer = new grpc.Server();
 
+    // Initialize MCP Server with dynamic base URL
+    const baseUrl = `http://localhost:${this._port}`;
+    this._mcpServer = createMcpServer(baseUrl);
+
+    // Setup MCP HTTP endpoint on express app
+    this.setupMcpHttpEndpoint();
+
     this.subscribeToExpressServerEvents();
     this.addGrpServices();
     this.subscribeToSLEvents();
@@ -69,6 +81,7 @@ export class MotionMasterStartup {
     this._httpServer.listen(this._port, async () => {
       LexiumLogger.info(`Server is running on http://localhost:${this._port}`);
       LexiumLogger.info("Starting ServiceLocator from service");
+      LexiumLogger.info("Motion Master MCP Server initialized and ready for tool calls");
     });
 
     try {
@@ -82,9 +95,78 @@ export class MotionMasterStartup {
       await connected;
 
       LexiumLogger.info("wait is over, SL is started");
+
+      LexiumLogger.info("Motion Master MCP Server initialized and running on HTTP transport");
     } catch (err) {
-      LexiumLogger.error("Error in start SL", err);
+      LexiumLogger.error("Error in start SL or MCP Server", err);
     }
+  }
+
+  private setupMcpHttpEndpoint() {
+    // Enable JSON parsing for MCP requests
+    this._app.use(express.json());
+
+    // MCP HTTP endpoint
+    this._app.all("/mcp", async (req, res) => {
+      try {
+        const sessionId = req.headers["mcp-session-id"] as string | undefined;
+
+        let transport = sessionId ? this._mcpSessions.get(sessionId) : undefined;
+
+        // Create new session on initialize
+        if (!transport && req.method === "POST" && req.body?.method === "initialize") {
+          transport = new StreamableHTTPServerTransport({
+            enableJsonResponse: true,
+            sessionIdGenerator: () => randomUUID(),
+          });
+
+          await this._mcpServer.connect(transport);
+          res.setHeader("Content-Type", "application/json");
+          if (transport.sessionId) {
+            res.setHeader("mcp-session-id", transport.sessionId);
+          }
+
+          await transport.handleRequest(req, res, req.body);
+
+          if (transport.sessionId) {
+            this._mcpSessions.set(transport.sessionId, transport);
+            LexiumLogger.info(`MCP Session created: ${transport.sessionId}`);
+          }
+          return;
+        }
+
+        // Handle existing session
+        if (transport) {
+          if (req.method === "DELETE") {
+            res.setHeader("Content-Type", "application/json");
+            await transport.handleRequest(req, res);
+            transport.close();
+            this._mcpSessions.delete(sessionId!);
+            LexiumLogger.info(`MCP Session closed: ${sessionId}`);
+          } else if (req.method === "GET") {
+            res.setHeader("Content-Type", "text/event-stream");
+            res.setHeader("Cache-Control", "no-cache");
+            await transport.handleRequest(req, res);
+          } else {
+            res.setHeader("Content-Type", "application/json");
+            await transport.handleRequest(req, res, req.body);
+          }
+          return;
+        }
+
+        res.setHeader("Content-Type", "application/json");
+        res.status(400).json({
+          jsonrpc: "2.0",
+          error: { code: -32000, message: "Session not found" },
+          id: null,
+        });
+      } catch (err) {
+        LexiumLogger.error("Error in MCP HTTP endpoint:", err);
+        if (!res.headersSent) res.status(500).end();
+      }
+    });
+
+    LexiumLogger.info(`MCP HTTP endpoint available at http://localhost:${this._port}/mcp`);
   }
 
   private addGrpServices() {
@@ -138,17 +220,17 @@ export class MotionMasterStartup {
 
     this._app.get("/serviceModel", async (req, res) => {
       // Send a response to the client
-      const sid = req.query["sm"];
+      const sid = req.query["sm"] as string | undefined;
       let isOrcestratedFlag: boolean = false;
       if (req.query["isOrcestrated"] && req.query["isOrcestrated"] === "true") {
         isOrcestratedFlag = true;
       }
-      LexiumLogger.info("received sm: " + sid);
+      LexiumLogger.info(`received sm: ${sid}`);
       LexiumLogger.info("received isOrcestrated", isOrcestratedFlag);
       if (sid) {
         try {
           LexiumLogger.info("Getting service model");
-          const sm3 = await this._sl.getServiceModelAsync(sid as string, isOrcestratedFlag);
+          const sm3 = await this._sl.getServiceModelAsync(sid, isOrcestratedFlag);
           LexiumLogger.info("GetserviceModelResponse", JSON.stringify(sm3));
           res.send("Hello, Received service model" + JSON.stringify(sm3));
         } catch (err) {
