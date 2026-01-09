@@ -7,9 +7,6 @@ startDiscoveryRoute.use(express.urlencoded({ extended: false }));
 StartDiscovery.init();
 
 //To Do: Remove the macAddress from the url as settings are retrieved from the repository.
-startDiscoveryRoute.post(
-  "/discoverDevices/:macAddress",
-  StartDiscovery.getInstance().StartDeviceDiscovery
-);
-
+startDiscoveryRoute.post("/discoverDevices/:macAddress", StartDiscovery.getInstance().StartDeviceDiscovery);
+startDiscoveryRoute.get("/devices/discoveryStatus", StartDiscovery.getInstance().GetDiscoveryStatus);
 export = startDiscoveryRoute;

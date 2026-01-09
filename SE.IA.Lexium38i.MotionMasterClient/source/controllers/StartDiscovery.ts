@@ -38,52 +38,111 @@ class StartDiscovery {
         This API is responsible for starting the device discovery.
     */
   StartDeviceDiscovery = async (req: Request, res: Response) => {
+    const currentSelectedMacAddress: string = req.params["macAddress"];
+
     try {
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-      const currentSelectedMacAddress: string = req.params["macAddress"]; //To Do: the macAddress should be retrieved from the solution dataspace.
+      // Send response immediately - API just triggers discovery in background
+      res.status(200).json({
+        status: "initiated",
+        message: "Device discovery started",
+        macAddress: currentSelectedMacAddress,
+        timestamp: new Date(),
+      });
 
-      SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: "Discovery Started" }));
+      // Run discovery in background after response is sent
+      process.nextTick(async () => {
+        try {
+          console.log(`[StartDiscovery] Background discovery starting for MAC: ${currentSelectedMacAddress}`);
+          SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: "Discovery Started" }));
 
-      this._motionMasterProcess = MotionMasterProcess.getInstance();
+          this._motionMasterProcess = MotionMasterProcess.getInstance();
 
-      if (
-        this._motionMasterProcess.getAlreadyExecutingMasterProcessMacAddress() != null &&
-        this._motionMasterProcess.getAlreadyExecutingMasterProcessMacAddress() !== currentSelectedMacAddress
-      ) {
-        const stopStatus = await this._motionMasterProcess?.stop();
-        if (stopStatus) {
-          LexiumLogger.info("Motion Master process stopped successfully.");
-        } else {
-          //ToDo: Notify user on the issue happened for restarting the device discovery!!!
-          // Later the status will be sent as Error.
-          LexiumLogger.info("No current system event info available.");
-          SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: ServerStatus.Timeout }));
-        }
-      }
-      this.subscribeEtherCatSystemEvents();
-      this.subscribeEtherCatDeviceRunningStatus();
-      if (this.motionMasterClientFunctionsInstance.running$.getValue() === false) {
-        LexiumLogger.info("Starting Motion Master process with MAC address: " + currentSelectedMacAddress);
-        this._motionMasterProcess
-          .start(currentSelectedMacAddress)
-          .then((status) => {
-            const masterProcessStatus = status as boolean;
-            if (!masterProcessStatus) {
-              SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED }));
+          if (
+            this._motionMasterProcess.getAlreadyExecutingMasterProcessMacAddress() != null &&
+            this._motionMasterProcess.getAlreadyExecutingMasterProcessMacAddress() !== currentSelectedMacAddress
+          ) {
+            const stopStatus = await this._motionMasterProcess?.stop();
+            if (stopStatus) {
+              LexiumLogger.info("Motion Master process stopped successfully.");
+            } else {
+              LexiumLogger.error("Failed to stop Motion Master process before starting new discovery.");
+              SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: ServerStatus.Timeout }));
+              return;
             }
-          })
-          .catch((error) => {
-            LexiumLogger.error("Error starting Motion Master process:", error);
-            SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED, errorMessage: error }));
-          });
-      }
+          }
+
+          this.subscribeEtherCatSystemEvents();
+          this.subscribeEtherCatDeviceRunningStatus();
+
+          if (this.motionMasterClientFunctionsInstance.running$.getValue() === false) {
+            console.log(`[StartDiscovery] Starting Motion Master process with MAC: ${currentSelectedMacAddress}`);
+            LexiumLogger.info("Starting Motion Master process with MAC address: " + currentSelectedMacAddress);
+
+            await this._motionMasterProcess
+              .start(currentSelectedMacAddress)
+              .then((status) => {
+                const masterProcessStatus = status as boolean;
+                if (masterProcessStatus) {
+                  console.log("[StartDiscovery] Motion Master process started successfully");
+                } else {
+                  console.log("[StartDiscovery] Motion Master process failed to start");
+                  SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED }));
+                }
+              })
+              .catch((error) => {
+                console.error("[StartDiscovery] Error starting process:", error);
+                LexiumLogger.error("Error starting Motion Master process:", error);
+                SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED, errorMessage: String(error) }));
+              });
+          } else {
+            console.log("[StartDiscovery] Motion Master process already running");
+          }
+        } catch (error) {
+          console.error("[StartDiscovery] Background task error:", error);
+          LexiumLogger.error("Start Device Discovery background task failed:", error);
+          SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED, errorMessage: String(error) }));
+        }
+      });
     } catch (error) {
-      LexiumLogger.error("Start Device Discovery failed with exception ", error);
-      SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: Constants.DISCOVERY_FAILED, errorMessage: error }));
+      console.error("[StartDiscovery] Error sending response:", error);
+      LexiumLogger.error("Start Device Discovery failed:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ status: "error", message: error instanceof Error ? error.message : String(error) });
+      }
     }
-    res.status(200).send({ message: "Motion Master started!" });
+  };
+
+  /*
+    This API returns the current discovery status and discovered devices
+  */
+  GetDiscoveryStatus = async (req: Request, res: Response) => {
+    try {
+      const devicesArray = this.motionMasterClientFunctionsInstance.previouslyDiscoveredDevices || [];
+      const isRunning = this.motionMasterClientFunctionsInstance.running$.getValue();
+      const isServerRunning = this.motionMasterClientFunctionsInstance.isMotionMasterServerRunning;
+
+      console.log("[StartDiscovery] GetDiscoveryStatus called");
+      console.log(`[StartDiscovery] isRunning=${isRunning}, isServerRunning=${isServerRunning}, deviceCount=${devicesArray.length}`);
+      console.log(`[StartDiscovery] Devices:`, JSON.stringify(devicesArray));
+
+      const statusData = {
+        isRunning,
+        isServerRunning,
+        currentMacAddress: this._motionMasterProcess?.getAlreadyExecutingMasterProcessMacAddress(),
+        discoveredDevices: devicesArray,
+        deviceCount: devicesArray.length,
+        message: "Discovered devices",
+        timestamp: new Date(),
+      };
+
+      console.log(`[StartDiscovery] Returning status with ${devicesArray.length} devices: ${JSON.stringify(statusData)}`);
+      LexiumLogger.info(`GetDiscoveryStatus: returning ${devicesArray.length} discovered devices`);
+      res.status(200).json(statusData);
+    } catch (error) {
+      console.log("[StartDiscovery] GetDiscoveryStatus exception:", error);
+      LexiumLogger.error("Get Discovery Status failed with exception", error);
+      res.status(500).json({ status: "error", message: error instanceof Error ? error.message : String(error) });
+    }
   };
 
   private subscribeEtherCatDeviceRunningStatus() {
@@ -122,9 +181,13 @@ class StartDiscovery {
         if (hasSystemEventInfo) {
           SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: "System event available. Notifying discovered devices..." }));
           await this.motionMasterClientFunctionsInstance.notifyDiscoveredDevices(this.motionMasterClientFunctionsInstance.currentSystemEventInfo);
+          // Devices are broadcast via Socket.io from notifyDiscoveredDevices method
+          LexiumLogger.info("Device discovery triggered via system event");
         } else {
           SocketBroadcaster.broadcast(Constants.EtherCatDiscoveryStatus, JSON.stringify({ status: "No current system event info available. Discovery might time out..." }));
           await this.motionMasterClientFunctionsInstance.updateDiscoveredDevices();
+          // Note: updateDiscoveredDevices broadcasts devices via Socket.io internally
+          LexiumLogger.info("Device discovery updated via updateDiscoveredDevices");
         }
       });
     } catch (error) {

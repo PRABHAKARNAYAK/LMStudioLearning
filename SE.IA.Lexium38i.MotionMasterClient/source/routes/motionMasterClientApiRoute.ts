@@ -43,6 +43,6 @@ motionMasterClientApiRouter.post("/devices/:deviceRef/stopSignalGenerator", Tuni
 /**
  * Get the current device status and send it in the response.
  */
-motionMasterClientApiRouter.get("/api/getCia402StateOfDevice", Lexium38iDiagnostics.getCia402StateOfDevice);
+motionMasterClientApiRouter.get("/api/devices/:deviceRef/getCia402StateOfDevice", Lexium38iDiagnostics.getCia402StateOfDevice);
 
 export = motionMasterClientApiRouter;

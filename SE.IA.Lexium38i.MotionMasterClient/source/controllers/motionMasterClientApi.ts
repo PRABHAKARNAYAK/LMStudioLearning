@@ -17,8 +17,6 @@ import {
 
 import { MotionMasterClientFunctions } from "./MotionMasterClientFunctions";
 import { Constants } from "../utility/constants";
-import NotificationHandler from "../services/NotificationHandler";
-import { NotificationType } from "../model/notificationInfo";
 
 Object.assign(globalThis, { WebSocket: require("ws") });
 
@@ -324,7 +322,7 @@ motionMasterClientRoutes.get(
       const deviceRef = ensureDeviceRef(req.params["deviceRef"]);
 
       motionMasterClientFunctionsInstance.quickStop(deviceRef);
-      res.send();
+      res.send({ message: "Quick stop command sent successfully" });
     } catch (error) {
       res.status(Constants.InternalServerError).send({ message: `Failed to send quick stop command. ${(error as Error).message}` });
     }

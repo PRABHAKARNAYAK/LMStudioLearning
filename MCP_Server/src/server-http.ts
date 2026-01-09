@@ -1,3 +1,34 @@
+/**
+ * HTTP Server Implementation for Model Context Protocol (MCP)
+ * 
+ * This module sets up an Express-based HTTP server that implements the MCP protocol
+ * with session management and streaming capabilities.
+ * 
+ * @module server-http
+ * 
+ * @description
+ * The server provides the following functionality:
+ * - CORS support for cross-origin requests
+ * - Session-based communication using unique session IDs
+ * - Initialization endpoint that creates new MCP sessions
+ * - Request handling for GET (streaming), POST (JSON-RPC), and DELETE (cleanup) methods
+ * - Comprehensive logging and debugging for request/response flow
+ * - StreamableHTTPServerTransport for bidirectional MCP communication
+ * 
+ * @remarks
+ * - Port is configurable via PORT environment variable (defaults to 3000)
+ * - Sessions are stored in-memory and keyed by session ID
+ * - CORS headers allow all origins by default
+ * - Response methods (send, end, json, setHeader) are monkey-patched for logging
+ * 
+ * @example
+ * ```
+ * // The server listens at http://localhost:3000/mcp
+ * // POST /mcp with method="initialize" creates a new session
+ * // GET /mcp with mcp-session-id streams events
+ * // DELETE /mcp with mcp-session-id closes the session
+ * ```
+ */
 import "dotenv/config";
 import express from "express";
 import { randomUUID } from "node:crypto";

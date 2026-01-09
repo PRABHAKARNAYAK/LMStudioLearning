@@ -69,6 +69,7 @@ export class MotionMasterClientFunctions {
   public async connectClient(hostname: string = Constants.EtherCatLocalHostIp): Promise<{ status: boolean; statusMessage: string }> {
     let statusMessage = "";
     let status = false;
+    console.log(`[MotionMasterClientFunctions] Connecting to Motion Master server at ${hostname}...`);
     this.client ??= createMotionMasterClient(hostname);
     try {
       SocketBroadcaster.broadcast(Constants.EtherCatSystemLogInfo, JSON.stringify({ systemLogInfo: "Client Waiting started", date: new Date().toString() }));
@@ -83,6 +84,7 @@ export class MotionMasterClientFunctions {
       this.client = undefined;
       status = false;
       statusMessage = "Connection failed with error: " + this.errmsg(err);
+      console.error(`[MotionMasterClientFunctions] ${statusMessage}`);
     }
     return { status, statusMessage };
   }
@@ -193,7 +195,14 @@ export class MotionMasterClientFunctions {
             ...device,
             status: DeviceStatus.Online, // Default status is Online
           };
-          this.previouslyDiscoveredDevices.push(deviceInfo);
+          const existingDeviceIndex = this.previouslyDiscoveredDevices.findIndex(
+            (d) => d.hardwareDescription?.device.serialNumber === device.hardwareDescription?.device.serialNumber
+          );
+          if (existingDeviceIndex === -1) {
+            this.previouslyDiscoveredDevices.push(deviceInfo);
+          } else {
+            this.previouslyDiscoveredDevices[existingDeviceIndex] = deviceInfo;
+          }
         });
         SocketBroadcaster.broadcast(Constants.EtherCatDiscoveredDevices, JSON.stringify(devices));
         SocketBroadcaster.broadcast(Constants.EtherCatSlavesReInitialized, JSON.stringify(devices));
@@ -240,6 +249,7 @@ export class MotionMasterClientFunctions {
 
     while (attempt < maxRetries && !ready) {
       try {
+        console.log(`[MotionMasterClientFunctions] Ensuring client is ready, attempt ${attempt + 1}/${maxRetries}`);
         ready = await this.client.whenReady(delayMs);
       } catch (err) {
         attempt++;
@@ -266,6 +276,7 @@ export class MotionMasterClientFunctions {
         const systemEventInfo = eventInfo as MotionMasterMessage.Status.SystemEvent;
         if (systemEventInfo != null) {
           this.currentSystemEventInfo = systemEventInfo;
+          console.log(`[MotionMasterClientFunctions] Received system event: ${JSON.stringify(systemEventInfo)}`);
           await this.notifyDiscoveredDevices(systemEventInfo);
         }
       });

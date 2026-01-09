@@ -180,9 +180,11 @@ class Lexium38iDiagnostics {
    */
   getCia402StateOfDevice = async (_req: Request, res: Response) => {
     const client = this.motionMasterClientFunctionsInstance.client;
-    if (!client || !this.currentDeviceRef) {
+    const deviceRef = ensureDeviceRef(_req.params["deviceRef"]);
+    if (!client) {
       return;
     }
+    this.currentDeviceRef = deviceRef;
     await lastValueFrom(client.request.getCia402State(this.currentDeviceRef))
       .then((currentStatus: Cia402State) => {
         const deviceCia402State = Cia402StateMapper.cia402StateMap[currentStatus] ?? Constants.SWITCH_ON_DISABLED;

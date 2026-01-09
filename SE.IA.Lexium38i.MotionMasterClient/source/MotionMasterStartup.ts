@@ -78,27 +78,42 @@ export class MotionMasterStartup {
       LexiumLogger.info(`gRPC Server running at http://127.0.0.1:${this._gRPCServerPort}`);
     });
 
-    this._httpServer.listen(this._port, async () => {
+    this._httpServer.listen(this._port, () => {
       LexiumLogger.info(`Server is running on http://localhost:${this._port}`);
-      LexiumLogger.info("Starting ServiceLocator from service");
+      LexiumLogger.info("MCP HTTP endpoint available at http://localhost:" + this._port + "/mcp");
       LexiumLogger.info("Motion Master MCP Server initialized and ready for tool calls");
     });
 
+    // Start ServiceLocator in the background without waiting for it
+    // This prevents the process from hanging if ServiceLocator times out
+    this.startServiceLocatorAsync();
+  }
+
+  private async startServiceLocatorAsync() {
     try {
-      const connected = new Promise<void>((resolve) => {
+      LexiumLogger.info("Starting ServiceLocator from service");
+
+      const connected = new Promise<void>((resolve, reject) => {
         this._sl.onConnectedEvent = () => {
           LexiumLogger.info(`ServiceLocatorProvider: ServiceLocator connected with serviceId ${this._serviceId}`);
           resolve();
         };
+
+        // Add a timeout in case ServiceLocator never connects
+        const timeout = setTimeout(() => {
+          reject(new Error("ServiceLocator connection timeout after 30 seconds"));
+        }, 30000);
       });
+
       await this._sl.startAsync();
       await connected;
 
-      LexiumLogger.info("wait is over, SL is started");
-
+      LexiumLogger.info("ServiceLocator startup successful");
       LexiumLogger.info("Motion Master MCP Server initialized and running on HTTP transport");
     } catch (err) {
-      LexiumLogger.error("Error in start SL or MCP Server", err);
+      LexiumLogger.warn(`ServiceLocator startup failed (MCP server will still work): ${err instanceof Error ? err.message : String(err)}`);
+      // Don't exit - let the MCP server continue running even if ServiceLocator fails
+      // The MCP server HTTP endpoint will still be available
     }
   }
 
@@ -109,64 +124,160 @@ export class MotionMasterStartup {
     // MCP HTTP endpoint
     this._app.all("/mcp", async (req, res) => {
       try {
-        const sessionId = req.headers["mcp-session-id"] as string | undefined;
+        const incomingSessionId = req.headers["mcp-session-id"] as string | undefined;
 
-        let transport = sessionId ? this._mcpSessions.get(sessionId) : undefined;
+        LexiumLogger.verbose(`[MCP] Request: ${req.method} ${req.path}, sessionId: ${incomingSessionId}, body.method: ${(req.body as any)?.method}`);
+
+        let transport = incomingSessionId ? this._mcpSessions.get(incomingSessionId) : undefined;
 
         // Create new session on initialize
-        if (!transport && req.method === "POST" && req.body?.method === "initialize") {
+        if (!transport && req.method === "POST" && (req.body as any)?.method === "initialize") {
+          // Generate a new session ID explicitly
+          const newSessionId = randomUUID();
+
+          LexiumLogger.info(`[MCP] Creating new session: ${newSessionId}`);
+
           transport = new StreamableHTTPServerTransport({
             enableJsonResponse: true,
-            sessionIdGenerator: () => randomUUID(),
+            sessionIdGenerator: () => newSessionId,
           });
 
-          await this._mcpServer.connect(transport);
-          res.setHeader("Content-Type", "application/json");
-          if (transport.sessionId) {
-            res.setHeader("mcp-session-id", transport.sessionId);
-          }
+          // Store the session BEFORE handling the request
+          this._mcpSessions.set(newSessionId, transport);
+          LexiumLogger.info(`[MCP] Session stored in map. Total sessions: ${this._mcpSessions.size}`);
 
+          // Connect the MCP server to the transport
+          await this._mcpServer.connect(transport);
+
+          // Set the session ID header BEFORE calling handleRequest
+          res.setHeader("mcp-session-id", newSessionId);
+          res.setHeader("Content-Type", "application/json");
+
+          // Handle the initialize request
           await transport.handleRequest(req, res, req.body);
 
-          if (transport.sessionId) {
-            this._mcpSessions.set(transport.sessionId, transport);
-            LexiumLogger.info(`MCP Session created: ${transport.sessionId}`);
-          }
+          LexiumLogger.info(`[MCP] Initialize request handled for session: ${newSessionId}`);
           return;
         }
 
         // Handle existing session
         if (transport) {
+          LexiumLogger.verbose(`[MCP] Using existing session: ${incomingSessionId}`);
+
           if (req.method === "DELETE") {
             res.setHeader("Content-Type", "application/json");
             await transport.handleRequest(req, res);
             transport.close();
-            this._mcpSessions.delete(sessionId!);
-            LexiumLogger.info(`MCP Session closed: ${sessionId}`);
+            this._mcpSessions.delete(incomingSessionId!);
+            LexiumLogger.info(`[MCP] Session closed: ${incomingSessionId}`);
           } else if (req.method === "GET") {
             res.setHeader("Content-Type", "text/event-stream");
             res.setHeader("Cache-Control", "no-cache");
+            res.setHeader("Connection", "keep-alive");
             await transport.handleRequest(req, res);
+          } else if (req.method === "POST") {
+            res.setHeader("Content-Type", "application/json");
+            // Pass the request body for POST requests
+            await transport.handleRequest(req, res, req.body);
           } else {
             res.setHeader("Content-Type", "application/json");
-            await transport.handleRequest(req, res, req.body);
+            await transport.handleRequest(req, res);
           }
           return;
+        }
+
+        // Session not found
+        if (incomingSessionId) {
+          LexiumLogger.warn(`[MCP] Session not found: ${incomingSessionId}. Available sessions: ${Array.from(this._mcpSessions.keys()).join(", ") || "none"}`);
+        } else {
+          LexiumLogger.warn(`[MCP] Request without session ID received for non-initialize method: ${(req.body as any)?.method}`);
         }
 
         res.setHeader("Content-Type", "application/json");
         res.status(400).json({
           jsonrpc: "2.0",
-          error: { code: -32000, message: "Session not found" },
-          id: null,
+          error: { code: -32600, message: `Session not found. Available: ${Array.from(this._mcpSessions.keys()).join(", ")}` },
+          id: (req.body as any)?.id || null,
         });
       } catch (err) {
-        LexiumLogger.error("Error in MCP HTTP endpoint:", err);
-        if (!res.headersSent) res.status(500).end();
+        LexiumLogger.error("Error in MCP HTTP endpoint:", err instanceof Error ? err.message : String(err));
+        if (!res.headersSent) {
+          res.setHeader("Content-Type", "application/json");
+          res.status(500).json({
+            jsonrpc: "2.0",
+            error: { code: -32000, message: `Internal server error: ${err instanceof Error ? err.message : "Unknown error"}` },
+            id: (req.body as any)?.id || null,
+          });
+        }
       }
     });
 
     LexiumLogger.info(`MCP HTTP endpoint available at http://localhost:${this._port}/mcp`);
+
+    // Debugging endpoint to list available tools
+    this._app.get("/mcp/tools", async (req, res) => {
+      try {
+        res.setHeader("Content-Type", "application/json");
+        // Create a request to list tools via MCP protocol
+        const listToolsRequest = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/list",
+          params: {},
+        };
+
+        // Try to get tools from the server
+        res.json({
+          status: "ok",
+          message: "This server supports MCP protocol with 28 registered tools",
+          tools: [
+            "ping",
+            "getGroupInfo",
+            "getControlPanelInfo",
+            "getDefaultParameterInfo",
+            "startHoming",
+            "startPositionProfile",
+            "startVelocityProfile",
+            "startTorqueProfile",
+            "releaseControl",
+            "startDiagnostics",
+            "resetFault",
+            "getDiagnosticStatus",
+            "getErrorAndWarningData",
+            "getCia402State",
+            "startSystemIdentification",
+            "getSystemIdentificationData",
+            "getPositionTuningInfo",
+            "startPositionAutoTuning",
+            "getVelocityTuningInfo",
+            "startVelocityAutoTuning",
+            "getTorqueTuningInfo",
+            "computePositionGains",
+            "computeVelocityGains",
+            "getTuningTrajectoryInfo",
+            "startSignalGenerator",
+            "stopSignalGenerator",
+            "startDeviceDiscovery",
+            "getDiscoveryStatus",
+          ],
+          note: "Use MCP protocol HTTP endpoint at /mcp to interact with these tools. Send initialize request with session ID header to start.",
+        });
+      } catch (err) {
+        LexiumLogger.error("Error listing tools:", err);
+        res.status(500).json({ error: "Failed to list tools" });
+      }
+    });
+
+    // Debugging endpoint to check server status
+    this._app.get("/mcp/status", async (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.json({
+        status: "ok",
+        mcp: "initialized",
+        sessions: this._mcpSessions.size,
+        port: this._port,
+      });
+    });
   }
 
   private addGrpServices() {
