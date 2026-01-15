@@ -1,0 +1,151 @@
+<div class="mcp-chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <h1>Motion Master Chat Assistant</h1>
+    <p class="subtitle">Chat with the LLM-powered servo drive assistant</p>
+
+    <!-- MCP Server Status -->
+    <div
+      class="status-bar"
+      [class.available]="mcpServerAvailable"
+      [class.unavailable]="!mcpServerAvailable"
+    >
+      <span class="status-indicator" [class.online]="mcpServerAvailable"></span>
+      <span class="status-text">
+        {{
+          mcpServerAvailable
+            ? "✓ MCP Server Connected"
+            : "✗ MCP Server Disconnected"
+        }}
+        <span class="tools-count" *ngIf="mcpServerAvailable"
+          >({{ toolsAvailable }} tools available)</span
+        >
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Chat Area -->
+  <div class="chat-content">
+    <!-- Messages Display -->
+    <div class="messages-container" #messagesContainer>
+      <div *ngIf="messages.length === 0" class="empty-state">
+        <h2>Welcome to Motion Master Chat</h2>
+        <p>Start a conversation about your servo drives and control systems.</p>
+        <div class="example-prompts">
+          <p class="label">Example prompts:</p>
+          <ul>
+            <li>
+              "Discover devices on network with MAC address 00:11:22:33:44:55"
+            </li>
+            <li>
+              "Move device-1 to position 5000 with acceleration 1000 and
+              deceleration 1000"
+            </li>
+            <li>"Get the CIA 402 state of device-1"</li>
+            <li>
+              "Start velocity profile at 100 RPM with acceleration 500 and
+              deceleration 500"
+            </li>
+            <li>"Get position tuning info for device-1"</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Message Bubbles -->
+      <div
+        *ngFor="let msg of messages; let i = index"
+        class="message"
+        [class.user]="msg.role === 'user'"
+        [class.assistant]="msg.role === 'assistant'"
+      >
+        <div
+          class="message-bubble"
+          [class.loading]="msg.isLoading"
+          [class.error]="msg.error"
+        >
+          <div class="message-content">
+            {{ msg.content }}
+          </div>
+
+          <!-- Tools Used Badge -->
+          <div
+            *ngIf="msg.displayToolsUsed && msg.displayToolsUsed.length > 0"
+            class="tools-used"
+          >
+            <div class="tools-label">Tools used:</div>
+            <div class="tool-badges">
+              <span
+                *ngFor="let tool of msg.displayToolsUsed"
+                class="tool-badge"
+                [title]="getToolDescription(tool)"
+              >
+                {{ tool }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Timestamp -->
+          <div class="message-timestamp">
+            {{ msg.timestamp | date : "HH:mm:ss" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+      <textarea
+        class="message-input"
+        [(ngModel)]="inputText"
+        (keypress)="onKeyPress($event)"
+        placeholder="Describe what you want to do with your servo drives... (Shift+Enter for new line)"
+        [disabled]="isLoading || !mcpServerAvailable"
+      ></textarea>
+
+      <div class="input-actions">
+        <button
+          class="send-btn"
+          (click)="sendMessage()"
+          [disabled]="isLoading || !inputText.trim() || !mcpServerAvailable"
+        >
+          <span *ngIf="!isLoading">Send</span>
+          <span *ngIf="isLoading" class="loading-spinner">Sending...</span>
+        </button>
+
+        <button
+          class="clear-btn"
+          (click)="clearHistory()"
+          [disabled]="messages.length === 0"
+        >
+          Clear History
+        </button>
+
+        <button
+          class="refresh-btn"
+          (click)="loadMcpStatus()"
+          title="Refresh MCP status"
+        >
+          <span>↻</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools Panel (Optional Sidebar) -->
+  <div class="tools-panel" *ngIf="availableTools.length > 0">
+    <div class="tools-header">
+      <h3>Available Tools</h3>
+      <span class="tools-count-badge">{{ availableTools.length }}</span>
+    </div>
+    <div class="tools-list">
+      <div
+        *ngFor="let tool of availableTools"
+        class="tool-item"
+        [title]="tool.function.description"
+      >
+        <div class="tool-name">{{ tool.function.name }}</div>
+        <div class="tool-desc">{{ tool.function.description }}</div>
+      </div>
+    </div>
+  </div>
+</div>

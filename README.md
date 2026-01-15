@@ -1,28 +1,76 @@
-# LM Studio Learning - MCP Servo Control System
+# LM Studio Learning - MCP Server & LLM Chat Integration
 
-This project is a multi-component system for servo device control, featuring a modern Angular UI, a Model Context Protocol (MCP) server, and a mock backend API for development and testing.
+This is a complete integration of the Motion Master Client MCP Server with the LM Studio `meta-llama-3.1-8b-instruct` chat model, featuring a beautiful Angular chat UI for natural language control of servo drives.
 
-## 🏗️ Architecture
+## 📚 Quick Navigation
+
+**Start here:** Read [QUICK_START.md](QUICK_START.md) (5 minutes)
+
+Then choose:
+
+- **Complete Setup Guide:** [MCP_INTEGRATION_README.md](MCP_INTEGRATION_README.md)
+- **What Was Built:** [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)
+- **Visual Diagrams:** [ARCHITECTURE_DIAGRAMS.md](ARCHITECTURE_DIAGRAMS.md)
+- **Code Examples:** [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
+- **File Inventory:** [FILES_SUMMARY.md](FILES_SUMMARY.md)
+
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────┐
-│  Angular Frontend   │ (LLM_UI, Port 4200)
-└──────────┬──────────┘
-			  │ HTTP/JSON-RPC
-			  ↓
-┌─────────────────────┐
-│    MCP Server       │ (MCP_Server, Port 3000)
-└──────────┬──────────┘
-			  │ HTTP/JSON
-			  ↓
-┌─────────────────────┐
-│  Mock Backend API   │ (mock-backend.ts, Port 4000)
-└──────────┬──────────┘
-			  ↓
-	  (Servo Hardware)
+User Browser
+   (Angular Chat UI - Port 4200)
+         ↓ HTTP/JSON
+    ┌─────────────────┐
+    │ Express Backend │ (Port 3001)
+    │   /api/mcp/*    │
+    └────────┬────────┘
+             │
+      ┌──────┴──────┬──────────┐
+      ↓             ↓          ↓
+   LM Studio    MCP Server   Other APIs
+   (Port 1234)  (Port 8036)   (as needed)
+      ↓             ↓
+   • Chat API   • 29 Tools
+   • Tool Call  • Device Mgmt
+   • Models     • Servo Control
 ```
 
 ## 🚀 Quick Start
+
+**See [QUICK_START.md](QUICK_START.md) for complete instructions**
+
+### TL;DR (4 Terminals)
+
+**Terminal 1: MCP Server**
+
+```bash
+cd SE.IA.Lexium38i.MotionMasterClient
+npm install && npm run build && npm run start
+```
+
+**Terminal 2: Express Backend**
+
+```bash
+cd synapticon-llm-express
+npm install && npm run build && npm run start
+```
+
+**Terminal 3: Angular Frontend**
+
+```bash
+cd LLM_UI
+npm install && ng serve
+```
+
+**Terminal 4: LM Studio**
+
+- Launch LM Studio app
+- Load `meta-llama-3.1-8b-instruct`
+- Start server (default port 1234)
+
+Then visit: **http://localhost:4200/mcp-chat**
+
+### Previous Quick Start
 
 ### Option 1: Automated (Recommended)
 

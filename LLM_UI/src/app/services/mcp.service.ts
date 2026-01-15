@@ -21,11 +21,11 @@ import {
   providedIn: 'root',
 })
 export class McpService {
-  private mcpUrl = 'http://localhost:3000/mcp';
+  private readonly mcpUrl = 'http://localhost:3000/mcp';
   private sessionId: string | null = null;
   private requestId = 0;
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     console.log('[MCP] McpService instantiated');
   }
 

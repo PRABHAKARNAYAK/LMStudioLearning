@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import llmRoutes from "./routes/llm";
 import llmStreamRoutes from "./routes/llmStream";
 import llmToolsRoutes from "./routes/llmTools";
+import mcpToolsRoutes from "./routes/mcpToolsRoute";
 import { guardrails } from "./middleware/guardrails";
 
 dotenv.config();
@@ -15,5 +16,6 @@ app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/llm", llmRoutes);
 app.use("/api/llm", llmStreamRoutes);
 app.use("/api/llm", llmToolsRoutes);
+app.use("/api/mcp", mcpToolsRoutes);
 const port = Number(process.env.PORT || 3001);
 app.listen(port, () => console.log(`LLM API on http://localhost:${port}`));
