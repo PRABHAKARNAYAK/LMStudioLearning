@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { tools, executeToolCall } from "../tools/synapticonTools";
+import { tools, executeToolCall } from "../tools/synapticonTools.js";
 const router = Router();
 function env() {
   return {

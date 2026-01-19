@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { mcpBridge } from "../services/mcpBridge";
+import { mcpBridge } from "../services/mcpBridge.js";
 
 const router = Router();
 
@@ -30,6 +30,231 @@ function isExampleValue(toolName: string, paramName: string, value: any): boolea
 
   return false;
 }
+
+/**
+ * Helper function to extract tool information from tool schema
+ */
+function extractToolInfo(tool: any) {
+  return {
+    name: tool.function.name,
+    description: tool.function.description,
+    parameters: tool.function.parameters?.properties || {},
+    required: tool.function.parameters?.required || [],
+  };
+}
+
+/**
+ * Helper function to analyze which parameters are missing for a tool
+ */
+function findMissingParameters(toolInfo: any, providedParams: Record<string, any>) {
+  const missingParams: any[] = [];
+
+  for (const paramName of toolInfo.required) {
+    if (!(paramName in providedParams) || providedParams[paramName] === null || providedParams[paramName] === undefined) {
+      const paramSchema = toolInfo.parameters[paramName] || {};
+      missingParams.push({
+        name: paramName,
+        type: paramSchema.type || "string",
+        description: paramSchema.description || "",
+        required: true,
+      });
+    }
+  }
+
+  return missingParams;
+}
+
+/**
+ * POST /analyze-question
+ * Analyze a user question to identify which tool should be used and what parameters are missing
+ * Request body: { question: string }
+ */
+router.post("/analyze-question", async (req: Request, res: Response) => {
+  try {
+    const { question } = req.body as { question: string };
+
+    if (!question) {
+      return res.status(400).json({ error: "Question is required" });
+    }
+
+    // Check if MCP server is available
+    const mcpAvailable = await mcpBridge.isAvailable();
+    if (!mcpAvailable) {
+      return res.status(503).json({
+        error: "MCP server is not available",
+      });
+    }
+
+    const { base, key, model } = {
+      base: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1",
+      key: process.env.LMSTUDIO_API_KEY || "lm-studio",
+      model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
+    };
+
+    // Get tools from MCP server
+    const mcpTools = mcpBridge.getToolsForLLM();
+
+    // Build system prompt for tool analysis
+    const systemPrompt = `You are a parameter extraction expert. Your job is to:
+1. Understand what the user wants to do
+2. Identify which tool from the available tools best matches their intent
+3. Extract ANY parameters that are explicitly mentioned in the user's question
+4. Respond ONLY with valid JSON in this format:
+{
+  "toolName": "name_of_the_tool",
+  "providedParameters": { "param1": "value1", "param2": "value2" },
+  "userIntent": "brief description of what user wants"
+}
+
+If no appropriate tool matches the user's intent, respond with:
+{
+  "toolName": null,
+  "message": "explanation of why no tool matches"
+}
+
+CRITICAL PARAMETER EXTRACTION RULES:
+- MAC ADDRESS: Look for patterns like "AA:BB:CC:DD:EE:FF" or "AA-BB-CC-DD-EE-FF" or similar hex patterns
+  - If you find a MAC address, extract it AS-IS with the user's format
+  - Parameter name is "macAddress"
+  - Examples: "discover with 00:11:22:33:44:55" -> macAddress: "00:11:22:33:44:55"
+- DEVICE REFERENCE: Look for "device", "servo", "axis" followed by names or numbers
+  - Parameter name is "deviceRef"
+  - Examples: "device-1", "servo-01", "axis_0"
+- NUMERIC PARAMETERS: Look for numbers in context
+  - Position: "position 5000" -> position: 5000
+  - RPM: "100 RPM" -> rpm: 100
+  - Acceleration: "acceleration 1000" -> acceleration: 1000
+- For numeric values, convert to numbers (e.g., "5000" becomes 5000)
+- For string values, use the exact text provided by the user
+- Keep MAC addresses and device references as strings
+
+IMPORTANT: Extract EVERY parameter mentioned, even if optional.
+Do NOT infer or assume values. Only extract what is EXPLICITLY stated.
+If the user mentions a value, extract it.`;
+
+    const messages: any[] = [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: `Available tools: ${JSON.stringify(
+          mcpTools.map((t) => ({ name: t.function.name, description: t.function.description, parameters: Object.keys(t.function.parameters?.properties || {}) })),
+          null,
+          2
+        )}\n\nUser question: "${question}"`,
+      },
+    ];
+
+    console.log(`[Analyze Route] Analyzing question: "${question}"`);
+
+    // Call LLM to analyze the question
+    const analysisResponse = await fetch(`${base}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.3,
+        max_tokens: 500,
+      }),
+    }).then((r) => r.json());
+
+    const analysisContent = analysisResponse?.choices?.[0]?.message?.content || "";
+    console.log(`[Analyze Route] LLM analysis response:`, analysisContent);
+
+    // Parse the JSON response from LLM
+    let analysisResult;
+    try {
+      analysisResult = JSON.parse(analysisContent);
+    } catch (parseError) {
+      console.error("[Analyze Route] Failed to parse LLM response as JSON:", analysisContent);
+      return res.status(400).json({
+        success: false,
+        message: "Could not analyze the question properly. Please rephrase.",
+      });
+    }
+
+    // Post-processing: If macAddress is missing, try to extract it from the question using regex
+    if (analysisResult.toolName) {
+      const providedParams = analysisResult.providedParameters || {};
+
+      // Check if this tool needs macAddress and it's not provided
+      const toolInfo = extractToolInfo(mcpTools.find((t) => t.function.name === analysisResult.toolName) || {});
+      if (toolInfo.required?.includes("macAddress") && !providedParams.macAddress) {
+        // Try to extract MAC address from the question
+        const macAddressPatterns = [
+          /([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})/g, // Standard MAC: AA:BB:CC:DD:EE:FF or AA-BB-CC-DD-EE-FF
+        ];
+
+        for (const pattern of macAddressPatterns) {
+          const match = question.match(pattern);
+          if (match) {
+            providedParams.macAddress = match[0];
+            analysisResult.providedParameters = providedParams;
+            console.log(`[Analyze Route] Extracted MAC address from question: ${match[0]}`);
+            break;
+          }
+        }
+      }
+    }
+
+    // If no tool matched
+    if (!analysisResult.toolName) {
+      return res.json({
+        success: true,
+        toolSuggestion: null,
+        message: analysisResult.message || "No matching tool found for your request.",
+      });
+    }
+
+    // Find the matching tool
+    const matchingTool = mcpTools.find((t) => t.function.name === analysisResult.toolName);
+    if (!matchingTool) {
+      return res.json({
+        success: true,
+        toolSuggestion: null,
+        message: `Tool '${analysisResult.toolName}' not found.`,
+      });
+    }
+
+    // Extract tool information
+    const toolInfo = extractToolInfo(matchingTool);
+
+    // Find missing required parameters
+    const providedParams = analysisResult.providedParameters || {};
+    const missingParams = findMissingParameters(toolInfo, providedParams);
+
+    // Clean up providedParameters to remove null/undefined values
+    const cleanedProvidedParams = Object.fromEntries(Object.entries(providedParams).filter(([_, value]) => value !== null && value !== undefined));
+
+    console.log(
+      `[Analyze Route] Tool: ${analysisResult.toolName}, Missing params:`,
+      missingParams.map((p) => p.name)
+    );
+
+    // Return the tool suggestion
+    return res.json({
+      success: true,
+      toolSuggestion: {
+        toolName: analysisResult.toolName,
+        toolDescription: toolInfo.description,
+        providedParameters: cleanedProvidedParams,
+        missingParameters: missingParams,
+      },
+    });
+  } catch (error) {
+    console.error("[Analyze Route] Error analyzing question:", error);
+    return res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+});
 
 /**
  * GET /list-tools

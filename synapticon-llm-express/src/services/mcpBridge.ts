@@ -568,9 +568,8 @@ export class MCPBridge {
       "startVelocityProfile",
       "startTorqueProfile",
       "releaseControl",
-      "startSystemIdentification",
-      "startPositionAutoTuning",
-      "startVelocityAutoTuning",
+      "computePositionGains",
+      "computeVelocityGains",
       "startSignalGenerator",
       "stopSignalGenerator",
       "quickStop",
@@ -596,6 +595,71 @@ export class MCPBridge {
       const bodyParams = { ...args };
       delete bodyParams.deviceRef;
       config.data = bodyParams;
+    }
+
+    // Special handling for startDeviceDiscovery - wait and poll for results
+    if (toolName === "startDeviceDiscovery") {
+      const response = await axios(config);
+      console.log(`[MCPBridge] Discovery initiated, polling for results...`);
+
+      // Wait for discovery to start
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Poll for discovery results
+      const timeoutSeconds = args.timeoutSeconds || 60;
+      const pollIntervalMs = args.pollIntervalMs || 2000;
+      const timeoutMs = timeoutSeconds * 1000;
+      const statusUrl = `${this.mcpBaseUrl}/startMaster/devices/discoveryStatus`;
+      const startTime = Date.now();
+      let pollCount = 0;
+
+      while (Date.now() - startTime < timeoutMs) {
+        pollCount++;
+        try {
+          const statusResponse = await axios.get(statusUrl);
+          const discoveredDevices = (statusResponse.data as any)?.discoveredDevices || [];
+
+          console.log(`[MCPBridge] Poll #${pollCount}: Found ${discoveredDevices.length} devices`);
+
+          if (discoveredDevices.length > 0) {
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            return {
+              status: "success",
+              message: "Device discovery completed successfully",
+              macAddress: args.macAddress,
+              devicesFound: discoveredDevices.length,
+              devices: discoveredDevices.map((device: any) => ({
+                id: device.id,
+                name: device.hardwareDescription?.device?.name || "Unknown Device",
+                deviceAddress: device.deviceAddress,
+                macAddress: device.hardwareDescription?.device?.macAddress,
+                serialNumber: device.hardwareDescription?.device?.serialNumber,
+                type: device.type,
+                status: device.status,
+                position: device.position,
+              })),
+              elapsedSeconds: elapsed,
+              pollCount,
+            };
+          }
+        } catch (e) {
+          console.log(`[MCPBridge] Poll #${pollCount} error: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      }
+
+      // Timeout
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      return {
+        status: "timeout",
+        message: "Device discovery timed out",
+        macAddress: args.macAddress,
+        devicesFound: 0,
+        devices: [],
+        elapsedSeconds: elapsed,
+        pollCount,
+      };
     }
 
     const response = await axios(config);

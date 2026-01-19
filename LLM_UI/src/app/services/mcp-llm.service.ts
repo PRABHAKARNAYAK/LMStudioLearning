@@ -56,6 +56,24 @@ export class McpLlmService {
   private conversationHistory: ChatMessage[] = [];
 
   /**
+   * Analyze a question to identify tools and required parameters
+   */
+  analyzeQuestion(question: string, ms = 15000): Observable<any> {
+    const url = `http://localhost:3001/api/mcp/analyze-question`;
+    const body = { question };
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    return this.http.post<any>(url, body, { headers }).pipe(
+      timeout(ms),
+      catchError((err: HttpErrorResponse) => {
+        const msg =
+          err.error?.error || err.message || 'Failed to analyze question.';
+        return throwError(() => new Error(msg));
+      })
+    );
+  }
+
+  /**
    * Chat with the LLM using MCP server tools
    */
   chatWithMcpTools(question: string, ms = 30000): Observable<ChatResponse> {
@@ -105,7 +123,7 @@ export class McpLlmService {
     args: Record<string, any>,
     ms = 30000
   ): Observable<ToolExecutionResult> {
-    const url = `${this.base}/execute-tool`;
+    const url = `http://localhost:3001/api/mcp/execute-tool`;
     const body = { toolName, args };
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 

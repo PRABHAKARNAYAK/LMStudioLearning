@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import llmRoutes from "./routes/llm";
-import llmStreamRoutes from "./routes/llmStream";
-import llmToolsRoutes from "./routes/llmTools";
-import mcpToolsRoutes from "./routes/mcpToolsRoute";
-import { guardrails } from "./middleware/guardrails";
+import llmRoutes from "./routes/llm.js";
+import llmStreamRoutes from "./routes/llmStream.js";
+import llmToolsRoutes from "./routes/llmTools.js";
+import mcpToolsRoutes from "./routes/mcpToolsRoute.js";
+import { guardrails } from "./middleware/guardrails.js";
 
 dotenv.config();
 const app = express();

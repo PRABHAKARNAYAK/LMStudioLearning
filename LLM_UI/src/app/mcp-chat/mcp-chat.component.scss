@@ -141,7 +141,6 @@
       /* Messages */
       .message {
         display: flex;
-        animation: slideIn 0.3s ease-out;
 
         &.user {
           justify-content: flex-end;
@@ -167,8 +166,6 @@
           max-width: 70%;
           padding: 12px 16px;
           word-wrap: break-word;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
 
           &.loading {
             opacity: 0.7;
@@ -426,15 +423,237 @@
   }
 }
 
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Tool Suggestion */
+.tool-suggestion {
+  background: #e8f5e9;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+.tool-suggestion .message-content {
+  color: #1b5e20;
+  margin-bottom: 8px;
+}
+.tool-parameters-editor {
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #c8e6c9;
+}
+.parameters-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.parameters-group h4 {
+  margin: 0 0 8px 0;
+  color: #1b5e20;
+  font-size: 0.9rem;
+}
+.parameter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+label {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.parameter-input,
+.parameter-value {
+  padding: 6px 8px;
+  border: 1px solid #c8e6c9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.parameter-input:focus {
+  outline: 0;
+  border-color: #4caf50;
+}
+.parameter-value {
+  background: #f5f5f5;
+  border-color: #ddd;
+  font-family: monospace;
+}
+.tool-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #c8e6c9;
+}
+.tool-actions button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.execute-btn {
+  flex: 1;
+  background: #4caf50;
+  color: #fff;
+}
+.execute-btn:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cancel-btn {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+}
+.tool-suggestion-content .tool-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tool-info {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #1b5e20;
+}
+.edit-btn {
+  padding: 6px 12px;
+  background: #4caf50;
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.tool-suggestion .message-timestamp {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  margin-top: 8px;
+}
+
+/* Tool Editor Styles */
+.tool-editor {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+
+  .editor-section {
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .params-display {
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #555;
+      word-break: break-word;
+    }
+
+    .no-params {
+      padding: 8px 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #999;
+      font-style: italic;
+    }
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .parameter-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .parameter-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #333;
+
+      .param-type {
+        font-size: 0.8rem;
+        color: #999;
+        font-weight: normal;
+        margin-left: 4px;
+      }
+
+      .required {
+        color: #e74c3c;
+        margin-left: 4px;
+      }
+    }
+
+    .param-input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-family: inherit;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+    }
+  }
+
+  .editor-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .submit-btn {
+      background: #667eea;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #5568d3;
+      }
+    }
+
+    .cancel-btn {
+      background: #f5f5f5;
+      color: #333;
+      border: 1px solid #ddd;
+
+      &:hover:not(:disabled) {
+        background: #efefef;
+      }
+    }
   }
 }
 

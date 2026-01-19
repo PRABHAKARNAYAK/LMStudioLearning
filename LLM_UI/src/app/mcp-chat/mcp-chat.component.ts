@@ -12,6 +12,29 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { McpLlmService, ChatResponse, Tool } from '../services';
 
+interface ToolParameter {
+  name: string;
+  type: string;
+  description: string;
+  required: boolean;
+  value?: any;
+}
+
+interface ToolSuggestion {
+  toolName: string;
+  toolDescription: string;
+  missingParameters: ToolParameter[];
+  providedParameters: Record<string, any>;
+}
+
+interface ToolContext {
+  toolName: string;
+  toolDescription: string;
+  providedParameters: Record<string, any>;
+  missingParameters: ToolParameter[];
+  awaitingInput: boolean;
+}
+
 interface DisplayMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -19,6 +42,8 @@ interface DisplayMessage {
   displayToolsUsed?: string[];
   isLoading?: boolean;
   error?: string;
+  toolSuggestion?: ToolSuggestion;
+  isEditing?: boolean;
 }
 
 @Component({
@@ -111,7 +136,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   /**
-   * Send a message and get response from LLM with MCP tools
+   * Send a message and analyze for tool execution
    */
   sendMessage(): void {
     if (!this.inputText.trim() || this.isLoading) {
@@ -135,6 +160,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       timestamp: new Date(),
     });
 
+    // Analyze the question for tool identification
     this.isLoading = true;
     this.shouldScroll = true;
 
@@ -142,51 +168,39 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const loadingMessageId = this.messages.length;
     this.addMessage({
       role: 'assistant',
-      content: 'Processing your request...',
+      content: 'Analyzing your request...',
       timestamp: new Date(),
       isLoading: true,
     });
 
     this.mcpLlmService
-      .chatWithMcpTools(userMessage)
+      .analyzeQuestion(userMessage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: ChatResponse) => {
+        next: (response: any) => {
           // Remove loading message
           this.messages = this.messages.filter(
             (_, index) => index !== loadingMessageId
           );
 
-          if (response.success) {
-            // Add assistant message
+          if (response.success && response.toolSuggestion) {
+            const toolSuggestion = response.toolSuggestion;
+
+            // Show the tool suggestion with editable parameters form
             this.addMessage({
               role: 'assistant',
-              content: response.answer,
+              content: `Found tool: **${toolSuggestion.toolName}**\n\n${toolSuggestion.toolDescription}`,
               timestamp: new Date(),
-              displayToolsUsed: response.toolsUsed,
+              toolSuggestion: toolSuggestion,
+              isEditing: true,
             });
-
-            // Add to service history
-            this.mcpLlmService.addMessageToHistory({
-              role: 'user',
-              content: userMessage,
-            });
-            this.mcpLlmService.addMessageToHistory({
-              role: 'assistant',
-              content: response.answer,
-              toolsUsed: response.toolsUsed,
-            });
-
-            // Log debug info
-            if (response.debug) {
-              console.log('Debug Info:', response.debug);
-            }
           } else {
             this.addMessage({
               role: 'assistant',
-              content: `Error: ${response.error || 'Unknown error occurred'}`,
+              content:
+                response.message ||
+                'Could not identify a tool for your request. Please try rephrasing.',
               timestamp: new Date(),
-              error: response.error,
             });
           }
 
@@ -201,7 +215,375 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
           this.addMessage({
             role: 'assistant',
-            content: `Error: ${error.message}`,
+            content: `Error analyzing request: ${error.message}`,
+            timestamp: new Date(),
+            error: error.message,
+          });
+
+          this.isLoading = false;
+          this.shouldScroll = true;
+        },
+      });
+  }
+
+  /**
+   * Submit edited tool parameters
+   */
+  submitToolParameters(messageIndex: number): void {
+    const message = this.messages[messageIndex];
+    if (message?.toolSuggestion) {
+      // Mark as no longer editing
+      message.isEditing = false;
+      this.shouldScroll = true;
+
+      // Execute the tool with the edited parameters
+      this.executeTool(message.toolSuggestion);
+    }
+  }
+
+  /**
+   * Cancel editing tool parameters
+   */
+  cancelEditToolParameters(messageIndex: number): void {
+    const message = this.messages[messageIndex];
+    if (message) {
+      message.isEditing = false;
+      this.shouldScroll = true;
+    }
+  }
+
+  /**
+   * Get provided parameters as a string
+   */
+  getProvidedParamsString(toolSuggestion: ToolSuggestion): string {
+    if (
+      !toolSuggestion.providedParameters ||
+      Object.keys(toolSuggestion.providedParameters).length === 0
+    ) {
+      return 'None';
+    }
+    return Object.entries(toolSuggestion.providedParameters)
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join(', ');
+  }
+
+  /**
+   * Get missing parameters as a string
+   */
+  getMissingParamsString(toolSuggestion: ToolSuggestion): string {
+    if (
+      !toolSuggestion.missingParameters ||
+      toolSuggestion.missingParameters.length === 0
+    ) {
+      return 'None';
+    }
+    return toolSuggestion.missingParameters
+      .map((p) => `${p.name} (${p.type})`)
+      .join(', ');
+  }
+
+  /**
+   * Check if any required parameter is missing
+   */
+  isAnyRequiredParameterMissing(toolSuggestion: ToolSuggestion): boolean {
+    return (
+      toolSuggestion.missingParameters &&
+      toolSuggestion.missingParameters.length > 0
+    );
+  }
+
+  /**
+   * Check if tool is ready to execute (all required parameters are provided)
+   */
+  isToolReadyToExecute(toolSuggestion: ToolSuggestion): boolean {
+    if (!toolSuggestion.missingParameters) {
+      return true;
+    }
+    return toolSuggestion.missingParameters.every(
+      (p) => p.value !== undefined && p.value !== null && p.value !== ''
+    );
+  }
+
+  /**
+   * Update parameter value
+   */
+  updateParameterValue(
+    toolSuggestion: ToolSuggestion,
+    paramName: string,
+    value: any
+  ): void {
+    const param = toolSuggestion.missingParameters.find(
+      (p) => p.name === paramName
+    );
+    if (param) {
+      param.value = this.parseValue(value, param.type);
+    }
+  }
+
+  /**
+   * Parse value based on parameter type
+   */
+  private parseValue(value: string, type: string): any {
+    const trimmed = value.trim();
+
+    if (type === 'number' || type === 'integer') {
+      const num = Number(trimmed);
+      return isNaN(num) ? trimmed : num;
+    } else if (type === 'boolean') {
+      return (
+        trimmed.toLowerCase() === 'true' ||
+        trimmed.toLowerCase() === 'yes' ||
+        trimmed === '1'
+      );
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Format tool execution response for display
+   */
+  formatToolResponse(toolName: string, result: any): string {
+    if (typeof result === 'string') {
+      return result;
+    }
+
+    // Handle common tool response patterns
+    if (typeof result === 'object' && result !== null) {
+      // Check if this is a device discovery response
+      if (
+        toolName.includes('discovery') ||
+        toolName.includes('DeviceDiscovery')
+      ) {
+        return this.formatDiscoveryResponse(result);
+      }
+
+      // Check if it's a polling/progress response
+      if (result.status === 'initiated' || result.status === 'in_progress') {
+        return this.formatPollingResponse(result);
+      }
+
+      // Check if it's a result with status and data
+      if (result.status === 'success' && result.data) {
+        return this.formatSuccessResponse(result);
+      }
+
+      // Default: pretty-print JSON
+      return JSON.stringify(result, null, 2);
+    }
+
+    return String(result);
+  }
+
+  /**
+   * Format device discovery response
+   */
+  private formatDiscoveryResponse(result: any): string {
+    const lines: string[] = [];
+    lines.push('🔍 **Device Discovery Completed**');
+    lines.push('');
+
+    if (result.message) {
+      lines.push(`📝 ${result.message}`);
+    }
+
+    if (result.macAddress) {
+      lines.push(`🔗 MAC Address: \`${result.macAddress}\``);
+    }
+
+    if (result.status) {
+      if (result.status === 'success') {
+        lines.push(`✅ Status: SUCCESS`);
+      } else if (result.status === 'timeout') {
+        lines.push(`⏱️ Status: TIMEOUT (no devices found in time)`);
+      } else {
+        lines.push(`📊 Status: ${result.status.toUpperCase()}`);
+      }
+    }
+
+    if (result.elapsedSeconds) {
+      lines.push(`⏰ Duration: ${result.elapsedSeconds} seconds`);
+    }
+
+    // Display discovered devices
+    if (
+      result.devices &&
+      Array.isArray(result.devices) &&
+      result.devices.length > 0
+    ) {
+      lines.push('');
+      lines.push(`📱 **Discovered Devices (${result.devices.length})**`);
+      lines.push('');
+
+      result.devices.forEach((device: any, index: number) => {
+        lines.push(`**${index + 1}. ${device.name || 'Unknown Device'}**`);
+        if (device.deviceAddress) {
+          lines.push(`   Device Address: \`${device.deviceAddress}\``);
+        }
+        if (device.macAddress) {
+          lines.push(`   MAC Address: \`${device.macAddress}\``);
+        }
+        if (device.serialNumber) {
+          lines.push(`   Serial Number: \`${device.serialNumber}\``);
+        }
+        if (device.type) {
+          lines.push(`   Type: ${device.type}`);
+        }
+        if (device.status) {
+          lines.push(`   Status: ${device.status}`);
+        }
+        lines.push('');
+      });
+    } else if (result.devicesFound === 0) {
+      lines.push('');
+      lines.push('❌ No devices were discovered.');
+    }
+
+    if (result.pollCount) {
+      lines.push(`_Polling completed after ${result.pollCount} attempts_`);
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Format polling/progress response
+   */
+  private formatPollingResponse(result: any): string {
+    const lines: string[] = [];
+
+    if (result.status === 'initiated') {
+      lines.push('⏳ **Discovery Initiated**');
+    } else if (result.status === 'in_progress') {
+      lines.push('🔄 **Discovery In Progress**');
+    }
+
+    if (result.message) {
+      lines.push(`${result.message}`);
+    }
+
+    if (result.devicesFound) {
+      lines.push('');
+      lines.push('**Devices Found:**');
+      if (Array.isArray(result.devicesFound)) {
+        result.devicesFound.forEach((device: any, index: number) => {
+          lines.push(`${index + 1}. ${device.name || 'Device'}`);
+          if (device.macAddress) {
+            lines.push(`   MAC: \`${device.macAddress}\``);
+          }
+          if (device.ipAddress) {
+            lines.push(`   IP: \`${device.ipAddress}\``);
+          }
+        });
+      }
+    }
+
+    if (result.progress !== undefined) {
+      lines.push('');
+      lines.push(`**Progress:** ${result.progress}%`);
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Format success response
+   */
+  private formatSuccessResponse(result: any): string {
+    const lines: string[] = [];
+    lines.push('✅ **Success**');
+    lines.push('');
+
+    if (result.message) {
+      lines.push(`${result.message}`);
+    }
+
+    if (result.data) {
+      lines.push('');
+      lines.push('**Data:**');
+      if (Array.isArray(result.data)) {
+        result.data.forEach((item: any) => {
+          lines.push(`- ${JSON.stringify(item)}`);
+        });
+      } else {
+        lines.push(JSON.stringify(result.data, null, 2));
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Execute tool with provided parameters
+   */
+  executeTool(toolSuggestion: ToolSuggestion): void {
+    this.isLoading = true;
+
+    const toolParams: Record<string, any> = {
+      ...toolSuggestion.providedParameters,
+    };
+
+    // Add all parameters (both provided and those edited in the form)
+    if (toolSuggestion.missingParameters) {
+      for (const param of toolSuggestion.missingParameters) {
+        if (
+          param.value !== undefined &&
+          param.value !== null &&
+          param.value !== ''
+        ) {
+          toolParams[param.name] = param.value;
+        }
+      }
+    }
+
+    this.addMessage({
+      role: 'assistant',
+      content: `Executing tool: ${toolSuggestion.toolName}...`,
+      timestamp: new Date(),
+      isLoading: true,
+    });
+
+    this.mcpLlmService
+      .executeTool(toolSuggestion.toolName, toolParams)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          // Remove loading message
+          this.messages = this.messages.filter((msg) => !msg.isLoading);
+
+          if (response.success) {
+            const formattedContent = this.formatToolResponse(
+              toolSuggestion.toolName,
+              response.result
+            );
+
+            this.addMessage({
+              role: 'assistant',
+              content: formattedContent,
+              timestamp: new Date(),
+              displayToolsUsed: [toolSuggestion.toolName],
+            });
+          } else {
+            this.addMessage({
+              role: 'assistant',
+              content: `Error executing tool: ${
+                response.error || 'Unknown error'
+              }`,
+              timestamp: new Date(),
+              error: response.error,
+            });
+          }
+
+          this.isLoading = false;
+          this.shouldScroll = true;
+        },
+        error: (error: any) => {
+          // Remove loading message
+          this.messages = this.messages.filter((msg) => !msg.isLoading);
+
+          this.addMessage({
+            role: 'assistant',
+            content: `Error executing tool: ${error.message}`,
             timestamp: new Date(),
             error: error.message,
           });

@@ -1,4 +1,4 @@
-import { fetchAlarmInfo, fetchParamInfo, searchManuals } from "./adapters/synapticonApi";
+import { fetchAlarmInfo, fetchParamInfo, searchManuals } from "./adapters/synapticonApi.js";
 export const tools = [
   {
     type: "function",
