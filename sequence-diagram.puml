@@ -1,0 +1,131 @@
+@startuml LLM_UI to Synapticon Integration Flow
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam BoxPadding 10
+
+title LLM_UI → synapticon-llm-express → SE.IA.Lexium38i.MotionMasterClient\nSequence Diagram
+
+actor User
+box "Angular Frontend" #LightBlue
+    participant "LLM_UI\n(Angular)" as UI
+    participant "McpLlmService" as McpService
+    participant "LlmService" as LlmService
+end box
+
+box "Express Backend" #LightGreen
+    participant "synapticon-llm-express\n(Express Server)" as Express
+    participant "mcpToolsRoute" as McpRoute
+    participant "llmTools Route" as LlmRoute
+    participant "MCPBridge" as Bridge
+    participant "LM Studio\n(LLM)" as LLM
+end box
+
+box "Motion Master" #LightYellow
+    participant "SE.IA.Lexium38i\nMotionMasterClient\n(HTTP Server)" as MMClient
+    participant "MCP Server\n(HTTP RPC)" as McpServer
+    participant "MotionMaster\nClientFunctions" as MMFunctions
+end box
+
+== Initialization ==
+Express -> Bridge: initialize()
+activate Bridge
+Bridge -> MMClient: POST /mcp\n{"method":"initialize"}
+MMClient -> McpServer: Initialize MCP session
+McpServer --> Bridge: sessionId + capabilities
+Bridge -> MMClient: POST /mcp\n{"method":"tools/list"}
+MMClient -> McpServer: List available tools
+McpServer --> Bridge: Tool definitions\n(ping, startDeviceDiscovery,\ngetDeviceList, etc.)
+Bridge --> Express: Tools loaded
+deactivate Bridge
+
+== User Interaction - Analyze Question ==
+User -> UI: "Start discovery for\nMAC 00:00:00:00:00:01"
+UI -> McpService: analyzeQuestion(question)
+activate McpService
+McpService -> Express: POST /api/mcp/analyze-question\n{question}
+activate Express
+Express -> McpRoute: analyzeQuestion()
+McpRoute -> Bridge: getToolsForLLM()
+Bridge --> McpRoute: Tool definitions for LLM
+McpRoute -> LLM: POST /v1/chat/completions\n{messages, tools}
+activate LLM
+LLM --> McpRoute: Suggested tool:\nstartDeviceDiscovery\n+ extracted parameters
+deactivate LLM
+McpRoute --> Express: {toolName, parameters,\nmissingParams}
+Express --> McpService: Analysis result
+deactivate Express
+McpService --> UI: Tool + parameters
+UI --> User: Show tool form\n(if params missing)
+deactivate McpService
+
+== Chat with MCP Tools - Full Flow ==
+User -> UI: "Execute discovery"
+UI -> McpService: chatWithMcpTools(question)
+activate McpService
+McpService -> Express: POST /api/mcp/chat-with-mcp-tools\n{question, history}
+activate Express
+Express -> McpRoute: chat-with-mcp-tools handler
+
+' First LLM Call - Tool Selection
+McpRoute -> Bridge: getToolsForLLM()
+Bridge --> McpRoute: LLM-formatted tools
+McpRoute -> LLM: POST /v1/chat/completions\n{messages, tools, tool_choice:"auto"}
+activate LLM
+LLM --> McpRoute: Tool calls:\n[{name:"startDeviceDiscovery",\nargs:{macAddress, timeout}}]
+deactivate LLM
+
+' Tool Execution via MCP
+loop For each tool call
+    McpRoute -> Bridge: executeTool(toolName, args)
+    activate Bridge
+    Bridge -> MMClient: POST /mcp\n{"method":"tools/call",\n"params":{name, arguments}}
+    activate MMClient
+    MMClient -> McpServer: Execute tool
+    activate McpServer
+    
+    alt Tool: startDeviceDiscovery
+        McpServer -> MMFunctions: Start discovery via\nHTTP API call
+        activate MMFunctions
+        MMFunctions -> MMFunctions: POST /startMaster/start
+        MMFunctions -> MMFunctions: Poll /startMaster/devices/\ndiscoveryStatus
+        MMFunctions --> McpServer: {discoveredDevices, elapsed}
+        deactivate MMFunctions
+    else Tool: getDeviceList
+        McpServer -> MMFunctions: Get connected devices
+        activate MMFunctions
+        MMFunctions -> MMFunctions: GET /startMaster/devices
+        MMFunctions --> McpServer: Device list
+        deactivate MMFunctions
+    else Tool: connectDevice
+        McpServer -> MMFunctions: Connect to device
+        activate MMFunctions
+        MMFunctions -> MMFunctions: POST /startMaster/\nconnect/{deviceRef}
+        MMFunctions --> McpServer: Connection result
+        deactivate MMFunctions
+    else Other MCP Tools
+        McpServer -> MMFunctions: Execute operation
+        MMFunctions --> McpServer: Result
+    end
+    
+    McpServer --> MMClient: Tool result
+    deactivate McpServer
+    MMClient --> Bridge: JSON-RPC response\n{result}
+    deactivate MMClient
+    Bridge --> McpRoute: {success, result}
+    deactivate Bridge
+end
+
+' Second LLM Call - Natural Language Response
+McpRoute -> LLM: POST /v1/chat/completions\n{messages + tool_results}
+activate LLM
+LLM --> McpRoute: Natural language answer:\n"I found 3 devices..."
+deactivate LLM
+
+McpRoute --> Express: {success, answer,\ntoolsUsed, debug}
+Express --> McpService: Chat response
+deactivate Express
+McpService --> UI: Display answer
+deactivate McpService
+UI --> User: Show result
+
+@enduml

@@ -86,7 +86,7 @@ export class MCPBridge {
             "Content-Type": "application/json",
             Accept: "application/json, text/event-stream",
           },
-        }
+        },
       );
 
       const sessionId = (initResponse.data as any)?.result?.sessionId;
@@ -112,7 +112,7 @@ export class MCPBridge {
             "mcp-session-id": sessionId,
             Accept: "application/json, text/event-stream",
           },
-        }
+        },
       );
 
       const toolsData = (toolsResponse.data as any)?.result?.tools || [];
@@ -572,7 +572,6 @@ export class MCPBridge {
       "computeVelocityGains",
       "startSignalGenerator",
       "stopSignalGenerator",
-      "quickStop",
     ];
 
     const isPost = postTools.includes(toolName);
@@ -704,7 +703,7 @@ export class MCPBridge {
             "Content-Type": "application/json",
             Accept: "application/json, text/event-stream",
           },
-        }
+        },
       );
       // If we get a response with result and no error, the server is available
       return response.status === 200 && !!(response.data as any)?.result;

@@ -18,7 +18,7 @@
             : "✗ MCP Server Disconnected"
         }}
         <span class="tools-count" *ngIf="mcpServerAvailable"
-          >({{ toolsAvailable }} tools available)</span
+          >({{ toolsAvailable }} control commands available)</span
         >
       </span>
     </div>
@@ -146,7 +146,7 @@
 
           <!-- Timestamp -->
           <div class="message-timestamp">
-            {{ msg.timestamp | date : "HH:mm:ss" }}
+            {{ msg.timestamp | date: "HH:mm:ss" }}
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@
   <!-- Tools Panel -->
   <div class="tools-panel" *ngIf="availableTools.length > 0">
     <div class="tools-header">
-      <h3>Available Tools</h3>
+      <h3>Available Motion Commands</h3>
       <span class="tools-count-badge">{{ availableTools.length }}</span>
     </div>
     <div class="tools-list">

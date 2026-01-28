@@ -175,7 +175,7 @@ motionMasterClientRoutes.get(
 
     const status = await motionMasterClientFunctionsInstance.getDeviceParameterValues(deviceRef, parameterId);
     res.send(status);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -188,7 +188,7 @@ motionMasterClientRoutes.get(
     }
     const status = await lastValueFrom(client.request.getSystemVersion(TIMEOUT_MS));
     res.send({ version: status.version });
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -201,7 +201,7 @@ motionMasterClientRoutes.get(
     }
     const devices = await lastValueFrom(client.request.getDevices(deviceRequestTimeout));
     res.send(devices);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -216,7 +216,7 @@ motionMasterClientRoutes.get(
     const deviceParameterTimeout = 5000;
     const status = await lastValueFrom(client.request.getDeviceParameterInfo(deviceRefObj, deviceParameterTimeout));
     res.send(status?.parameters);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get("/api/devices/:deviceRef/upload/:index/:subindex", motionMasterClientFunctionsInstance.upload);
@@ -235,7 +235,7 @@ motionMasterClientRoutes.get(
     }
     await client.request.download(deviceRef, index, subindex, value);
     res.status(204).send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -249,7 +249,7 @@ motionMasterClientRoutes.get(
     }
     const value = await lastValueFrom(client.request.getFiles(deviceRef));
     res.send(value);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -263,7 +263,7 @@ motionMasterClientRoutes.get(
     }
     await lastValueFrom(client.request.unlockProtectedFiles(deviceRef));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -279,7 +279,7 @@ motionMasterClientRoutes.get(
     const timeoutDuration = 30000;
     const value = await lastValueFrom(client.request.getDecodedFile(deviceRef, filename, timeoutDuration));
     res.send(value);
-  })
+  }),
 );
 
 motionMasterClientRoutes.put(
@@ -297,7 +297,7 @@ motionMasterClientRoutes.put(
     const requestTimeoutDuration = 30000;
     await lastValueFrom(client.request.setFile(deviceRef, filename, content, true, requestTimeoutDuration));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.delete(
@@ -312,7 +312,7 @@ motionMasterClientRoutes.delete(
     }
     await lastValueFrom(client.request.deleteFile(deviceRef, filename));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -326,7 +326,7 @@ motionMasterClientRoutes.get(
     } catch (error) {
       res.status(Constants.InternalServerError).send({ message: `Failed to send quick stop command. ${(error as Error).message}` });
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.post(
@@ -355,7 +355,7 @@ motionMasterClientRoutes.post(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -371,7 +371,7 @@ motionMasterClientRoutes.get(
     const logRetrievalTimeout = 10000;
     const status = await lastValueFrom(client.request.getDeviceLog(deviceRefObj, logRetrievalTimeout));
     res.send(status.content);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -394,7 +394,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -410,7 +410,7 @@ motionMasterClientRoutes.get(
     const coggingTorqueDataTimeout = 10000;
     const status = await lastValueFrom(client.request.getCoggingTorqueData(deviceRefObj, coggingTorqueDataTimeout));
     res.send(status.table?.data ?? []);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -432,7 +432,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -447,7 +447,7 @@ motionMasterClientRoutes.get(
     }
     await lastValueFrom(client.request.setModesOfOperation(deviceRef, modesOfOperation));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -462,7 +462,7 @@ motionMasterClientRoutes.get(
     }
     await client.request.transitionToCia402State(deviceRef, state);
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -476,7 +476,7 @@ motionMasterClientRoutes.get(
     }
     const state = await lastValueFrom(client.request.getCia402State(deviceRef));
     res.send({ state });
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -490,7 +490,7 @@ motionMasterClientRoutes.get(
     }
     await lastValueFrom(client.request.saveConfig(deviceRef));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.put(
@@ -506,7 +506,7 @@ motionMasterClientRoutes.put(
     }
     await lastValueFrom(client.request.loadConfig(deviceRef, content, { count: 20, delay: 500 }));
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -546,7 +546,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -596,7 +596,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -616,7 +616,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(Constants.InternalServerError).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -631,7 +631,7 @@ motionMasterClientRoutes.get(
     }
     await client.request.setHaltBit(deviceRef, value);
     res.send();
-  })
+  }),
 );
 
 /**
@@ -669,7 +669,7 @@ motionMasterClientRoutes.get(
     } finally {
       dataMonitoring.stop();
     }
-  })
+  }),
 );
 
 /**
@@ -709,7 +709,7 @@ motionMasterClientRoutes.get(
     } finally {
       dataMonitoring.stop();
     }
-  })
+  }),
 );
 
 /**
@@ -753,7 +753,7 @@ motionMasterClientRoutes.get(
     } finally {
       dataMonitoring.stop();
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -767,7 +767,7 @@ motionMasterClientRoutes.get(
     }
     await client.request.applySetPoint(deviceRef);
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -784,14 +784,14 @@ motionMasterClientRoutes.get(
     }
     const requestTimeout = 120000;
     const status = await lastValueFrom(
-      client.request.startCirculoEncoderNarrowAngleCalibrationProcedure({ ...deviceRefObj, encoderOrdinal, activateHealthMonitoring }, requestTimeout)
+      client.request.startCirculoEncoderNarrowAngleCalibrationProcedure({ ...deviceRefObj, encoderOrdinal, activateHealthMonitoring }, requestTimeout),
     );
     if (status.request === "succeeded") {
       res.send();
     } else {
       res.status(500).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -813,7 +813,7 @@ motionMasterClientRoutes.get(
     } else {
       res.status(500).send(status.error);
     }
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -827,7 +827,7 @@ motionMasterClientRoutes.get(
     }
     await new IntegroEncoderCalibration(client, deviceRef).start();
     res.send();
-  })
+  }),
 );
 
 let motionComposerRunner: MotionComposerRunner | null = null;
@@ -844,7 +844,7 @@ motionMasterClientRoutes.post(
     const finalMotionComposer = await lastValueFrom(motionComposerRunner.run(motionComposer));
     motionComposerRunner = null;
     res.send(finalMotionComposer);
-  })
+  }),
 );
 
 motionMasterClientRoutes.get(
@@ -852,7 +852,7 @@ motionMasterClientRoutes.get(
   asyncHandler(async (_req: Request, res: Response) => {
     motionComposerRunner?.stop();
     res.send();
-  })
+  }),
 );
 
 motionMasterClientRoutes.get("/api/devices/:deviceRef/getDeviceParameters", motionMasterClientFunctionsInstance.getDeviceParameters);

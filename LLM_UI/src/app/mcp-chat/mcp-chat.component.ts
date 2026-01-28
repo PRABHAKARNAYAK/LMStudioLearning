@@ -100,19 +100,19 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
           if (this.mcpServerAvailable) {
             this.addSystemMessage(
-              `✓ MCP Server connected. ${status.toolsAvailable} tools available.`
+              `✓ MCP Server connected. ${status.toolsAvailable} control commands available.`,
             );
             this.loadAvailableTools();
           } else {
             this.addSystemMessage(
-              '✗ MCP Server not available. Make sure the Motion Master Client MCP server is running on http://localhost:8036'
+              '✗ MCP Server not available. Make sure the Motion Master Client MCP server is running on http://localhost:8036',
             );
           }
         },
         error: (error: any) => {
           this.mcpServerAvailable = false;
           this.addSystemMessage(
-            `Error connecting to MCP server: ${error.message}`
+            `Error connecting to MCP server: ${error.message}`,
           );
         },
       });
@@ -145,7 +145,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     if (!this.mcpServerAvailable) {
       this.addSystemMessage(
-        'Error: MCP Server is not available. Please start the Motion Master Client MCP server.'
+        'Error: MCP Server is not available. Please start the Motion Master Client MCP server.',
       );
       return;
     }
@@ -180,7 +180,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         next: (response: any) => {
           // Remove loading message
           this.messages = this.messages.filter(
-            (_, index) => index !== loadingMessageId
+            (_, index) => index !== loadingMessageId,
           );
 
           if (response.success && response.toolSuggestion) {
@@ -210,7 +210,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         error: (error: any) => {
           // Remove loading message
           this.messages = this.messages.filter(
-            (_, index) => index !== loadingMessageId
+            (_, index) => index !== loadingMessageId,
           );
 
           this.addMessage({
@@ -300,7 +300,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       return true;
     }
     return toolSuggestion.missingParameters.every(
-      (p) => p.value !== undefined && p.value !== null && p.value !== ''
+      (p) => p.value !== undefined && p.value !== null && p.value !== '',
     );
   }
 
@@ -310,10 +310,10 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   updateParameterValue(
     toolSuggestion: ToolSuggestion,
     paramName: string,
-    value: any
+    value: any,
   ): void {
     const param = toolSuggestion.missingParameters.find(
-      (p) => p.name === paramName
+      (p) => p.name === paramName,
     );
     if (param) {
       param.value = this.parseValue(value, param.type);
@@ -554,7 +554,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           if (response.success) {
             const formattedContent = this.formatToolResponse(
               toolSuggestion.toolName,
-              response.result
+              response.result,
             );
 
             this.addMessage({
