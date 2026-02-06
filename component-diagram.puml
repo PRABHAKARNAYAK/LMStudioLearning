@@ -1,0 +1,177 @@
+@startuml Component Architecture
+!define RECTANGLE class
+
+skinparam component {
+  BackgroundColor<<frontend>> LightBlue
+  BackgroundColor<<backend>> LightGreen
+  BackgroundColor<<external>> LightYellow
+  BorderColor Black
+  ArrowColor Black
+}
+
+skinparam database {
+  BackgroundColor LightGray
+}
+
+title LLM Motion Control System - Component Diagram
+
+' External Systems
+component "LM Studio" as lmstudio <<external>> #LightYellow
+note right of lmstudio
+  Port: 1234
+  • Chat Completion API
+  • Tool Calling Support
+  • Model Management
+end note
+
+' Frontend - Angular Application
+package "LLM_UI (Angular Frontend)" as frontend <<frontend>> {
+  component "mcp-chat.component" as chatComponent {
+    portin userInput
+    portout displayMessages
+  }
+  
+  component "mcp-servo-control.component" as servoComponent {
+    portin servoCommands
+  }
+  
+  component "McpLlmService" as mcpLlmService {
+    portout httpRequests
+  }
+  
+  component "MCP Service" as mcpService {
+    portout apiCalls
+  }
+  
+  chatComponent --> mcpLlmService : uses
+  servoComponent --> mcpService : uses
+}
+
+note bottom of frontend
+  Port: 4200
+  Technology: Angular 18
+  • Chat interface
+  • Servo control UI
+  • Real-time updates
+end note
+
+' Backend - Express Server
+package "synapticon-llm-express\n(Express Backend)" as expressBackend <<backend>> {
+  
+  component "Express Server" as expressServer {
+    portin restApi
+  }
+  
+  component "MCP Tools Route" as mcpRoute {
+    portout toolOperations
+  }
+  
+  component "LLM Routes" as llmRoutes {
+    portout llmOperations
+  }
+  
+  component "MCPBridge Service" as mcpBridge {
+    portout mcpCommunication
+  }
+  
+  component "Guardrails Middleware" as guardrails
+  
+  expressServer --> guardrails : validates
+  guardrails --> mcpRoute : /api/mcp/*
+  guardrails --> llmRoutes : /api/llm/*
+  mcpRoute --> mcpBridge : uses
+  llmRoutes --> lmstudio : HTTP
+}
+
+note bottom of expressBackend
+  Port: 3001
+  Technology: Node.js + Express
+  • Chat with MCP tools
+  • Tool execution
+  • LLM integration
+  • Request validation
+end note
+
+' Motion Master Client
+package "SE.IA.Lexium38i.MotionMasterClient\n(Motion Control Server)" as motionMaster <<backend>> {
+  
+  component "Express Server\n(REST API)" as mmExpressServer {
+    portin restEndpoints
+  }
+  
+  component "gRPC Server" as grpcServer {
+    portin grpcEndpoints
+  }
+  
+  component "WebSocket Server" as wsServer {
+    portin wsConnections
+  }
+  
+  component "MCP Server" as mcpServer {
+    portin toolCalls
+    portout toolResponses
+  }
+  
+  component "MotionMasterClientFunctions" as mmcFunctions {
+    portout deviceControl
+  }
+  
+  component "Controllers" as controllers {
+  }
+  
+  mmExpressServer --> controllers : routes to
+  grpcServer --> controllers : calls
+  mcpServer --> mmcFunctions : orchestrates
+  controllers --> mmcFunctions : uses
+}
+
+note bottom of motionMaster
+  Ports: 8036 (HTTP), 30043 (gRPC), 8081 (WS)
+  Technology: Node.js + Express + gRPC
+  • Device discovery & management
+  • Motion control operations
+  • Parameter management
+  • MCP tool interface
+  • Real-time device monitoring
+end note
+
+' Physical Devices
+database "Motion Control Devices" as devices {
+  [Lexium38i Drive]
+  [Synapticon Devices]
+}
+
+' Relationships
+mcpLlmService -down-> mcpRoute : POST /api/mcp/chat-with-mcp-tools\nGET /api/mcp/list-tools\nGET /api/mcp/mcp-status\nPOST /api/mcp/execute-tool
+mcpService -down-> mmExpressServer : HTTP REST API\n/startMaster/*\n/parameterConfig/*
+
+mcpBridge -down-> mcpServer : HTTP\n/mcp/tools/list\n/mcp/tools/call
+
+llmRoutes -up-> lmstudio : POST /v1/chat/completions\n(with tool definitions)
+
+mmcFunctions -down-> devices : Device Control\nCommands
+
+' Additional notes
+note right of mcpBridge
+  **MCPBridge Service**
+  • Fetches MCP tools
+  • Converts to OpenAI format
+  • Executes tool calls
+  • Handles errors
+end note
+
+note left of mcpServer
+  **MCP Server Functions**
+  • ping
+  • discoverDevices
+  • listDevices
+  • moveAbsolute
+  • moveVelocity
+  • stopMotion
+  • getDeviceStatus
+  • readParameter
+  • writeParameter
+  • ...and more
+end note
+
+@enduml

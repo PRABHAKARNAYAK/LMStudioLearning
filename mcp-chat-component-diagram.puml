@@ -1,0 +1,242 @@
+@startuml MCP_Chat_Component_Architecture
+
+skinparam component {
+  BackgroundColor<<UI>> LightSkyBlue
+  BackgroundColor<<Service>> LightGreen
+  BackgroundColor<<Backend>> PaleGreen
+  BackgroundColor<<Server>> LightYellow
+  BorderColor Black
+  ArrowColor DarkSlateGray
+  FontSize 11
+}
+
+skinparam note {
+  BackgroundColor LemonChiffon
+  BorderColor Black
+}
+
+title mcp-chat.component Integration Architecture
+
+' Frontend Component
+package "LLM_UI Angular Frontend Port 4200" as ui_package {
+  
+  component chatHTML <<UI>> [
+    mcp-chat.component.html
+    --
+    UI Elements:
+    Chat Header
+    MCP Status Bar
+    Messages Container
+    Tool Editor
+    Input Area
+    Tools Panel
+  ]
+  
+  component chatTS <<UI>> [
+    mcp-chat.component.ts
+    --
+    State Management:
+    messages
+    availableTools
+    mcpServerAvailable
+    toolsAvailable
+    ==
+    Methods:
+    loadMcpStatus()
+    sendMessage()
+    submitToolParameters()
+    clearHistory()
+  ]
+  
+  component mcpLlmService <<Service>> [
+    McpLlmService
+    --
+    API Methods:
+    chatWithMcpTools()
+    getMcpStatus()
+    listTools()
+    executeSpecificTool()
+    analyzeQuestion()
+    ==
+    conversationHistory
+  ]
+  
+  chatHTML -down-> chatTS : binds to
+  chatTS -down-> mcpLlmService : uses
+}
+
+note right of chatHTML
+  User Interactions:
+  Type messages
+  Edit tool parameters
+  Execute tools
+  View tool results
+  Monitor MCP status
+end note
+
+' Express Backend
+package "synapticon_llm_express Port 3001" as express_package {
+  
+  component expressServer <<Backend>> [
+    Express Server
+    --
+    /api/mcp/*
+    /api/llm/*
+  ]
+  
+  component mcpRoute <<Backend>> [
+    mcpToolsRoute
+    --
+    POST /chat-with-mcp-tools
+    POST /analyze-question
+    GET /list-tools
+    GET /mcp-status
+    POST /execute-tool
+  ]
+  
+  component mcpBridge <<Backend>> [
+    MCPBridge Service
+    --
+    Methods:
+    initialize()
+    getTools()
+    executeToolCall()
+    checkStatus()
+    ==
+    Properties:
+    mcpBaseUrl
+    tools Map
+  ]
+  
+  component llmService <<Backend>> [
+    LLM Service
+    --
+    Integration:
+    LM Studio API
+    Tool definitions
+    Process tool calls
+  ]
+  
+  expressServer -down-> mcpRoute : routes to
+  mcpRoute -down-> mcpBridge : uses
+  mcpRoute -down-> llmService : uses
+}
+
+note bottom of mcpRoute
+  Request Processing:
+  1. Validate request
+  2. Check MCP availability
+  3. Get tool definitions
+  4. Call LLM with tools
+  5. Execute tool calls
+  6. Return formatted response
+end note
+
+' Motion Master Server
+package "Motion_Master_Client Port 8036" as motion_package {
+  
+  component mmExpressServer <<Server>> [
+    Express Server
+    --
+    /startMaster/*
+    /parameterConfig/*
+  ]
+  
+  component mcpServer <<Server>> [
+    MCP Server
+    --
+    /mcp/tools/list
+    /mcp/tools/call
+  ]
+  
+  component mmcFunctions <<Server>> [
+    MotionMasterClientFunctions
+    --
+    Device Operations:
+    discoverDevices()
+    listDevices()
+    moveAbsolute()
+    moveVelocity()
+    stopMotion()
+    getDeviceStatus()
+    readParameter()
+    writeParameter()
+  ]
+  
+  mmExpressServer --> mcpServer : exposes
+  mcpServer -down-> mmcFunctions : orchestrates
+}
+
+note bottom of mcpServer
+  Available MCP Tools:
+  ping (Health check)
+  discoverDevices (Find devices)
+  listDevices (Show all devices)
+  moveAbsolute (Position control)
+  moveVelocity (Speed control)
+  stopMotion (Emergency stop)
+  getDeviceStatus (Status info)
+  readParameter (Read config)
+  writeParameter (Write config)
+  enableAxis (Enable motor)
+  disableAxis (Disable motor)
+  and more...
+end note
+
+' External LLM
+cloud "LM_Studio Port 1234" as lmstudio #LightYellow
+
+' Communication Flows
+mcpLlmService -down-> mcpRoute : HTTP POST/GET
+mcpBridge -down-> mcpServer : HTTP Tool Calls
+mcpRoute -right-> lmstudio : POST chat/completions
+lmstudio -left-> mcpRoute : Tool calls response
+
+' Detailed Flow Annotations
+note bottom of mcpLlmService
+  API Calls:
+  /api/mcp/chat-with-mcp-tools
+  /api/mcp/list-tools
+  /api/mcp/mcp-status
+  /api/mcp/execute-tool
+  
+  Payload:
+  question and conversationHistory
+end note
+
+note bottom of mcpBridge
+  MCP Protocol:
+  GET /mcp/tools/list
+  Returns tool schemas
+  
+  POST /mcp/tools/call
+  Executes tool with arguments
+  Returns result
+end note
+
+note bottom of lmstudio
+  LLM Request:
+  model, messages, tools
+  tool_choice: auto
+  
+  LLM Response:
+  message with tool_calls
+  finish_reason: tool_calls
+end note
+
+' Data Flow Legend
+legend right
+  |= Symbol |= Meaning |
+  | <<UI>> | User Interface Components |
+  | <<Service>> | Angular Services |
+  | <<Backend>> | Express Backend Components |
+  | <<Server>> | Motion Control Server |
+  
+  Data Flow:
+  User Question to UI to Angular Service to Express API
+  to LLM with tool definitions to Tool Calls
+  to MCP Server to Motion Control to Device Action
+  Response back through chain to UI Display
+endlegend
+
+@enduml

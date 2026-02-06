@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net" modified="2026-01-28T00:00:00.000Z" agent="GitHub Copilot" version="22.1.16" etag="generated" type="device">
+  <diagram name="System Architecture Overview" id="system-architecture">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- USER INTERACTION LAYER -->
+        <mxCell id="user-layer" value="USER INTERACTION LAYER" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontSize=14;fontStyle=1;spacing=10;spacingTop=20;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="1040" height="340" as="geometry" />
+        </mxCell>
+        
+        <!-- Angular Chat UI -->
+        <mxCell id="angular-ui" value="Angular Chat UI (Port 4200)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;verticalAlign=top;fontSize=12;fontStyle=1;spacing=10;spacingTop=20;" vertex="1" parent="1">
+          <mxGeometry x="120" y="80" width="960" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- mcp-chat component -->
+        <mxCell id="mcp-chat" value="mcp-chat.component" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=11;fontStyle=1;spacing=10;spacingTop=15;" vertex="1" parent="1">
+          <mxGeometry x="160" y="120" width="880" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- UI Components -->
+        <mxCell id="messages-display" value="Messages&#xa;Display" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="200" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="input-area" value="Input&#xa;Area" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="420" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tools-panel" value="Tools&#xa;Panel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="640" y="160" width="180" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="status-indicator" value="Status&#xa;Indicator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="860" y="160" width="140" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- McpLlmService -->
+        <mxCell id="mcp-llm-service" value="McpLlmService (Angular Service)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="270" width="880" height="50" as="geometry" />
+        </mxCell>
+        
+        <!-- Connection from service to backend -->
+        <mxCell id="http-connection-1" value="HTTP Requests (REST API)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#6c8ebf;fontSize=11;" edge="1" parent="1" source="mcp-llm-service" target="express-backend">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="380" as="sourcePoint" />
+            <mxPoint x="600" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Express Backend -->
+        <mxCell id="express-backend" value="Express Backend (Port 3001) - /api/mcp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;verticalAlign=top;fontSize=12;fontStyle=1;spacing=10;spacingTop=20;" vertex="1" parent="1">
+          <mxGeometry x="80" y="450" width="1040" height="340" as="geometry" />
+        </mxCell>
+        
+        <!-- mcpToolsRoute -->
+        <mxCell id="mcp-tools-route" value="mcpToolsRoute" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;verticalAlign=top;fontSize=11;fontStyle=1;spacing=10;spacingTop=15;" vertex="1" parent="1">
+          <mxGeometry x="120" y="490" width="960" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- API Endpoints -->
+        <mxCell id="endpoints" value="POST /chat-with-mcp-tools&#xa;GET  /list-tools&#xa;GET  /mcp-status&#xa;POST /execute-tool" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;align=left;spacingLeft=10;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="160" y="530" width="880" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- MCPBridge Service -->
+        <mxCell id="mcp-bridge" value="MCPBridge Service&#xa;&#xa;• Tool Management&#xa;• Tool Execution&#xa;• Error Handling&#xa;• Status Checking" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;align=left;spacingLeft=20;" vertex="1" parent="1">
+          <mxGeometry x="120" y="660" width="960" height="110" as="geometry" />
+        </mxCell>
+        
+        <!-- External Services -->
+        <mxCell id="lm-studio" value="LM Studio&#xa;(Port 1234)&#xa;&#xa;• Chat API&#xa;• Tool Calling&#xa;• Model Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="850" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="mcp-server" value="MCP Server&#xa;(Port 8036)&#xa;&#xa;• Tool HTTP Endpoints&#xa;• Device Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="850" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="other-apis" value="Other APIs&#xa;(as needed)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="850" width="280" height="140" as="geometry" />
+        </mxCell>
+        
+        <!-- Connections from MCPBridge to services -->
+        <mxCell id="conn-lm-studio" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="mcp-bridge" target="lm-studio">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn-mcp-server" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="mcp-bridge" target="mcp-server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="conn-other-apis" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#666666;" edge="1" parent="1" source="mcp-bridge" target="other-apis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Label for JSON over HTTP -->
+        <mxCell id="json-label" value="JSON over HTTP" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="520" y="400" width="160" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

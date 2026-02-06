@@ -3,15 +3,16 @@
   display: flex;
   height: calc(100vh - 60px);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
 
   .chat-header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #009e4d;
     color: #ffffff;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -146,7 +147,7 @@
           justify-content: flex-end;
 
           .message-bubble {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #009e4d;
             color: #ffffff;
             border-radius: 18px 18px 4px 18px;
           }
@@ -292,7 +293,7 @@
 
         .send-btn {
           flex: 1;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: linear-gradient(135deg, #009e4d 0%, #007a3d 100%);
           color: #ffffff;
           min-height: 44px;
 
@@ -352,7 +353,7 @@
       justify-content: space-between;
       margin-bottom: 16px;
       padding-bottom: 12px;
-      border-bottom: 2px solid #667eea;
+      border-bottom: 2px solid #009e4d;
 
       h3 {
         margin: 0;
@@ -361,7 +362,7 @@
       }
 
       .tools-count-badge {
-        background: #667eea;
+        background: #009e4d;
         color: #ffffff;
         border-radius: 20px;
         padding: 2px 8px;
@@ -379,7 +380,7 @@
         padding: 12px;
         background: white;
         border-radius: 8px;
-        border-left: 3px solid #667eea;
+        border-left: 3px solid #009e4d;
         cursor: pointer;
         transition: all 0.3s ease;
 
