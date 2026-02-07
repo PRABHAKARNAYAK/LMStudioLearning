@@ -65,6 +65,68 @@ function findMissingParameters(toolInfo: any, providedParams: Record<string, any
 }
 
 /**
+ * Check if the LLM server (LM Studio or Ollama) is available and the model is accessible
+ */
+async function checkLLMAvailability(baseUrl: string, modelName: string): Promise<{ available: boolean; message: string; provider?: string }> {
+  try {
+    // Try to fetch available models from the server
+    const response = await fetch(`${baseUrl.replace("/v1", "")}/api/tags`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }).catch(() => null);
+
+    if (response && response.ok) {
+      // Ollama-style response
+      const data = await response.json();
+      const models = data.models || [];
+      const modelExists = models.some((m: any) => m.name === modelName || m.model === modelName);
+
+      if (modelExists) {
+        return {
+          available: true,
+          message: `Ollama is running and model '${modelName}' is available`,
+          provider: "Ollama",
+        };
+      } else {
+        return {
+          available: false,
+          message: `Ollama is running but model '${modelName}' is not available. Run: ollama pull ${modelName}`,
+          provider: "Ollama",
+        };
+      }
+    }
+
+    // Try LM Studio-style models endpoint
+    const lmStudioResponse = await fetch(`${baseUrl}/models`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    }).catch(() => null);
+
+    if (lmStudioResponse && lmStudioResponse.ok) {
+      const data = await lmStudioResponse.json();
+      const models = data.data || [];
+      const modelExists = models.some((m: any) => m.id === modelName);
+
+      return {
+        available: true,
+        message: modelExists ? `LM Studio is running and model '${modelName}' is loaded` : `LM Studio is running but model '${modelName}' may not be loaded`,
+        provider: "LM Studio",
+      };
+    }
+
+    return {
+      available: false,
+      message: `LLM server is not responding at ${baseUrl}. Make sure Ollama or LM Studio is running.`,
+    };
+  } catch (error) {
+    return {
+      available: false,
+      message: `Cannot connect to LLM server at ${baseUrl}: ${error instanceof Error ? error.message : "Unknown error"}`,
+    };
+  }
+}
+
+/**
  * POST /analyze-question
  * Analyze a user question to identify which tool should be used and what parameters are missing
  * Request body: { question: string }
@@ -88,8 +150,20 @@ router.post("/analyze-question", async (req: Request, res: Response) => {
     const { base, key, model } = {
       base: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1",
       key: process.env.LMSTUDIO_API_KEY || "lm-studio",
-      model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
+      model: process.env.LMSTUDIO_MODEL || "llama3.1:8b",
     };
+
+    // Check LLM availability
+    const llmStatus = await checkLLMAvailability(base, model);
+    if (!llmStatus.available) {
+      return res.status(503).json({
+        error: "LLM server is not available",
+        message: llmStatus.message,
+        suggestion: llmStatus.provider === "Ollama" ? "Run setup-ollama.ps1 to install and configure Ollama" : "Make sure LM Studio or Ollama is running",
+      });
+    }
+
+    console.log(`[Analyze Route] Using ${llmStatus.provider || "LLM"}: ${llmStatus.message}`);
 
     // Get tools from MCP server
     const mcpTools = mcpBridge.getToolsForLLM();
@@ -142,7 +216,7 @@ If the user mentions a value, extract it.`;
         content: `Available tools: ${JSON.stringify(
           mcpTools.map((t) => ({ name: t.function.name, description: t.function.description, parameters: Object.keys(t.function.parameters?.properties || {}) })),
           null,
-          2
+          2,
         )}\n\nUser question: "${question}"`,
       },
     ];
@@ -234,7 +308,7 @@ If the user mentions a value, extract it.`;
 
     console.log(
       `[Analyze Route] Tool: ${analysisResult.toolName}, Missing params:`,
-      missingParams.map((p) => p.name)
+      missingParams.map((p) => p.name),
     );
 
     // Return the tool suggestion
@@ -305,8 +379,20 @@ router.post("/chat-with-mcp-tools", async (req: Request, res: Response) => {
     const { base, key, model } = {
       base: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1",
       key: process.env.LMSTUDIO_API_KEY || "lm-studio",
-      model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
+      model: process.env.LMSTUDIO_MODEL || "llama3.1:8b",
     };
+
+    // Check LLM availability
+    const llmStatus = await checkLLMAvailability(base, model);
+    if (!llmStatus.available) {
+      return res.status(503).json({
+        error: "LLM server is not available",
+        message: llmStatus.message,
+        suggestion: llmStatus.provider === "Ollama" ? "Run setup-ollama.ps1 to install and configure Ollama" : "Make sure LM Studio or Ollama is running",
+      });
+    }
+
+    console.log(`[MCP Route] Using ${llmStatus.provider || "LLM"}: ${llmStatus.message}`);
 
     // Get tools from MCP server
     const mcpTools = mcpBridge.getToolsForLLM();
