@@ -89,7 +89,17 @@ export class MCPBridge {
         },
       );
 
-      const sessionId = (initResponse.data as any)?.result?.sessionId;
+      // Extract session ID from response headers (case-insensitive)
+      let sessionId = initResponse.headers["mcp-session-id"] || initResponse.headers["Mcp-Session-Id"];
+      if (!sessionId && initResponse.headers) {
+        // Try to find session id in headers with any casing
+        for (const key of Object.keys(initResponse.headers)) {
+          if (key.toLowerCase() === "mcp-session-id") {
+            sessionId = initResponse.headers[key];
+            break;
+          }
+        }
+      }
       if (!sessionId) {
         throw new Error("Failed to obtain session ID from MCP server");
       }
