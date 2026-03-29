@@ -1,7 +1,7 @@
 <div class="mcp-chat-container">
   <!-- Header -->
   <div class="chat-header">
-    <h1>Motion Master Chat Assistant</h1>
+    <h1>Natural Language Interface For Industrial Motion Control</h1>
     <p class="subtitle">Chat with the servo drive control assistant</p>
 
     <!-- MCP Server Status -->
@@ -13,9 +13,7 @@
       <span class="status-indicator" [class.online]="mcpServerAvailable"></span>
       <span class="status-text">
         {{
-          mcpServerAvailable
-            ? "✓ MCP Server Connected"
-            : "✗ MCP Server Disconnected"
+          mcpServerAvailable ? "✓ Server Connected" : "✗ Server Disconnected"
         }}
         <span class="tools-count" *ngIf="mcpServerAvailable"
           >({{ toolsAvailable }} control commands available)</span

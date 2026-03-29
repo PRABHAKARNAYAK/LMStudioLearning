@@ -100,7 +100,7 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
           if (this.mcpServerAvailable) {
             this.addSystemMessage(
-              `✓ MCP Server connected. ${status.toolsAvailable} control commands available.`,
+              `✓ Server connected. ${status.toolsAvailable} control commands available.`,
             );
             this.loadAvailableTools();
           } else {
