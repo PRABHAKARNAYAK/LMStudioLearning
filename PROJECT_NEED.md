@@ -12,7 +12,7 @@
 
 ## Problem Statement
 
-Operating industrial servo drives requires specialized expertise in industrial protocols (CANopen, CIA-402), complex parameter databases, and proprietary software tools. This creates significant barriers to productivity, accessibility, and knowledge transfer.
+Operating industrial servo drives requires specialized expertise in industrial protocols ( ModBUS TCP, EtherCAT, DPWS, Profinet, et al.), complex parameter databases, and proprietary software tools. This creates significant barriers to productivity, accessibility, and knowledge transfer.
 
 ### Key Problems & Impact
 

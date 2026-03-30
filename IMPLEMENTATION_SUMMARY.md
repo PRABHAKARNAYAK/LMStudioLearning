@@ -5,8 +5,9 @@
 Industrial servo commissioning and troubleshooting are expensive because users must understand:
 
 - Vendor-specific APIs and UIs
-- CANopen / CiA-402 concepts
+- Different industrial communication Protocols like ModBUS TCP, EtherCAT, DPWS, Profinet, et al.
 - Large parameter surfaces and execution order constraints
+- Variable Speed Drives domain knowledge like ATV6000, ATV900, ATV600, servo drives like Lexium.
 
 From `PROJECT_NEED.md`, this creates major cost drivers:
 
