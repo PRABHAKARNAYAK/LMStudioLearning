@@ -64,6 +64,62 @@ function findMissingParameters(toolInfo: any, providedParams: Record<string, any
   return missingParams;
 }
 
+async function summarizeToolExecution(toolName: string, args: Record<string, any>, rawResult: any): Promise<string | null> {
+  try {
+    const { base, key, model } = {
+      base: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1",
+      key: process.env.LMSTUDIO_API_KEY || "lm-studio",
+      model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
+    };
+
+    const resultText = typeof rawResult === "string" ? rawResult : JSON.stringify(rawResult, null, 2);
+
+    const messages = [
+      {
+        role: "system",
+        content:
+          "You are a Motion Master tool result interpreter. Summarize the tool output in concise, user-friendly text. " +
+          "Only use facts present in the tool output. If fields are missing, say they are unavailable.",
+      },
+      {
+        role: "user",
+        content:
+          `Tool name: ${toolName}\n` +
+          `Tool arguments: ${JSON.stringify(args, null, 2)}\n` +
+          `Tool raw result:\n${resultText}\n\n` +
+          "Provide:\n" +
+          "1) One-line status\n" +
+          "2) Key details as short bullets\n" +
+          "3) Recommended next step",
+      },
+    ];
+
+    const completionResponse = await fetch(`${base}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: 0.2,
+        max_tokens: 700,
+      }),
+    }).then((r) => r.json());
+
+    const summary = completionResponse?.choices?.[0]?.message?.content;
+    if (typeof summary === "string" && summary.trim().length > 0) {
+      return summary;
+    }
+
+    return null;
+  } catch (error) {
+    console.error("[MCP Route] Failed to summarize tool execution:", error);
+    return null;
+  }
+}
+
 /**
  * POST /analyze-question
  * Analyze a user question to identify which tool should be used and what parameters are missing
@@ -142,7 +198,7 @@ If the user mentions a value, extract it.`;
         content: `Available tools: ${JSON.stringify(
           mcpTools.map((t) => ({ name: t.function.name, description: t.function.description, parameters: Object.keys(t.function.parameters?.properties || {}) })),
           null,
-          2
+          2,
         )}\n\nUser question: "${question}"`,
       },
     ];
@@ -234,7 +290,7 @@ If the user mentions a value, extract it.`;
 
     console.log(
       `[Analyze Route] Tool: ${analysisResult.toolName}, Missing params:`,
-      missingParams.map((p) => p.name)
+      missingParams.map((p) => p.name),
     );
 
     // Return the tool suggestion
@@ -512,9 +568,10 @@ router.post("/chat-with-mcp-tools", async (req: Request, res: Response) => {
  */
 router.post("/execute-tool", async (req: Request, res: Response) => {
   try {
-    const { toolName, args } = req.body as {
+    const { toolName, args, summarizeWithLlm } = req.body as {
       toolName: string;
       args: Record<string, any>;
+      summarizeWithLlm?: boolean;
     };
 
     if (!toolName || !args) {
@@ -535,10 +592,14 @@ router.post("/execute-tool", async (req: Request, res: Response) => {
     const result = await mcpBridge.executeTool(toolName, args);
 
     if (result.success) {
+      const shouldSummarize = summarizeWithLlm !== false;
+      const answer = shouldSummarize ? await summarizeToolExecution(toolName, args, result.result) : null;
+
       return res.json({
         success: true,
         tool: toolName,
         result: result.result,
+        answer,
       });
     } else {
       return res.status(400).json({

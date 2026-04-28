@@ -18,6 +18,24 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 100;
 
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-logo {
+      display: block;
+      height: 48px;
+      width: auto;
+      margin-left: 20px;
+      flex-shrink: 0;
+    }
+
     h1 {
       margin: 0 0 5px 0;
       font-size: 1.8rem;

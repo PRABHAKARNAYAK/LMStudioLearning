@@ -46,6 +46,7 @@ export interface ToolExecutionResult {
   success: boolean;
   tool: string;
   result?: any;
+  answer?: string | null;
   error?: string;
 }
 
@@ -69,7 +70,7 @@ export class McpLlmService {
         const msg =
           err.error?.error || err.message || 'Failed to analyze question.';
         return throwError(() => new Error(msg));
-      })
+      }),
     );
   }
 
@@ -92,7 +93,7 @@ export class McpLlmService {
       catchError((err: HttpErrorResponse) => {
         const msg = err.error?.error || err.message || 'MCP chat failed.';
         return throwError(() => new Error(msg));
-      })
+      }),
     );
   }
 
@@ -100,7 +101,7 @@ export class McpLlmService {
    * Get list of available MCP tools
    */
   listMcpTools(
-    ms = 10000
+    ms = 10000,
   ): Observable<{ success: boolean; toolCount: number; tools: Tool[] }> {
     const url = `http://localhost:3001/api/mcp/list-tools`;
     return this.http
@@ -111,7 +112,7 @@ export class McpLlmService {
           const msg =
             err.error?.error || err.message || 'Failed to list tools.';
           return throwError(() => new Error(msg));
-        })
+        }),
       );
   }
 
@@ -121,7 +122,7 @@ export class McpLlmService {
   executeTool(
     toolName: string,
     args: Record<string, any>,
-    ms = 30000
+    ms = 30000,
   ): Observable<ToolExecutionResult> {
     const url = `http://localhost:3001/api/mcp/execute-tool`;
     const body = { toolName, args };
@@ -132,7 +133,7 @@ export class McpLlmService {
       catchError((err: HttpErrorResponse) => {
         const msg = err.error?.error || err.message || 'Tool execution failed.';
         return throwError(() => new Error(msg));
-      })
+      }),
     );
   }
 
@@ -147,7 +148,7 @@ export class McpLlmService {
         const msg =
           err.error?.error || err.message || 'Failed to get MCP status.';
         return throwError(() => new Error(msg));
-      })
+      }),
     );
   }
 

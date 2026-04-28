@@ -321,20 +321,91 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   /**
+   * Update an already provided parameter value from editable inputs
+   */
+  updateProvidedParameterValue(
+    toolSuggestion: ToolSuggestion,
+    paramName: string,
+    value: any,
+  ): void {
+    toolSuggestion.providedParameters[paramName] =
+      this.parseDynamicValue(value);
+  }
+
+  /**
+   * Get a readable type label for dynamic parameter values
+   */
+  getInferredParamType(value: any): string {
+    if (Array.isArray(value)) {
+      return 'array';
+    }
+
+    if (value === null) {
+      return 'null';
+    }
+
+    return typeof value;
+  }
+
+  /**
    * Parse value based on parameter type
    */
-  private parseValue(value: string, type: string): any {
-    const trimmed = value.trim();
+  private parseValue(value: any, type: string): any {
+    const asString = String(value ?? '');
+    const trimmed = asString.trim();
 
     if (type === 'number' || type === 'integer') {
       const num = Number(trimmed);
-      return isNaN(num) ? trimmed : num;
+      return Number.isNaN(num) ? trimmed : num;
     } else if (type === 'boolean') {
       return (
         trimmed.toLowerCase() === 'true' ||
         trimmed.toLowerCase() === 'yes' ||
         trimmed === '1'
       );
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Parse dynamic values for provided parameters when no schema type is available
+   */
+  private parseDynamicValue(value: any): any {
+    if (typeof value !== 'string') {
+      return value;
+    }
+
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      return '';
+    }
+
+    const lower = trimmed.toLowerCase();
+    if (lower === 'true' || lower === 'yes') {
+      return true;
+    }
+    if (lower === 'false' || lower === 'no') {
+      return false;
+    }
+
+    const numericPattern = /^-?\d+(\.\d+)?$/;
+    if (numericPattern.test(trimmed)) {
+      const numericValue = Number(trimmed);
+      if (!Number.isNaN(numericValue)) {
+        return numericValue;
+      }
+    }
+
+    const looksLikeJson =
+      (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+      (trimmed.startsWith('[') && trimmed.endsWith(']'));
+    if (looksLikeJson) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed;
+      }
     }
 
     return trimmed;
@@ -552,10 +623,13 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.messages = this.messages.filter((msg) => !msg.isLoading);
 
           if (response.success) {
-            const formattedContent = this.formatToolResponse(
-              toolSuggestion.toolName,
-              response.result,
-            );
+            const formattedContent =
+              typeof response.answer === 'string' && response.answer.trim()
+                ? response.answer
+                : this.formatToolResponse(
+                    toolSuggestion.toolName,
+                    response.result,
+                  );
 
             this.addMessage({
               role: 'assistant',
@@ -650,5 +724,19 @@ export class McpChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   getToolDescription(toolName: string): string {
     const tool = this.availableTools.find((t) => t.function.name === toolName);
     return tool ? tool.function.description : '';
+  }
+
+  /**
+   * TrackBy function for provided parameters (keyvalue pipe)
+   */
+  trackByKey(index: number, item: any): string {
+    return item.key;
+  }
+
+  /**
+   * TrackBy function for missing parameters
+   */
+  trackByParamName(index: number, param: ToolParameter): string {
+    return param.name;
   }
 }

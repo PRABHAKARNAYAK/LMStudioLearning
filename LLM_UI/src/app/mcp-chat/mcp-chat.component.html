@@ -1,8 +1,17 @@
 <div class="mcp-chat-container">
   <!-- Header -->
   <div class="chat-header">
-    <h1>Natural Language Interface For Industrial Motion Control</h1>
-    <p class="subtitle">Chat with the servo drive control assistant</p>
+    <div class="header-title-row">
+      <div class="header-text">
+        <h1>Natural Language Interface For Industrial Motion Control</h1>
+        <p class="subtitle">Chat with the servo drive control assistant</p>
+      </div>
+      <img
+        src="SE_green_rgb.png"
+        alt="Schneider Electric"
+        class="header-logo"
+      />
+    </div>
 
     <!-- MCP Server Status -->
     <div
@@ -62,10 +71,40 @@
             <div class="editor-section">
               <h4>Provided Parameters</h4>
               <div
+                class="parameter-inputs"
                 *ngIf="getProvidedParamsString(msg.toolSuggestion) !== 'None'"
-                class="params-display"
               >
-                {{ getProvidedParamsString(msg.toolSuggestion) }}
+                <div
+                  *ngFor="
+                    let entry of msg.toolSuggestion.providedParameters
+                      | keyvalue;
+                    trackBy: trackByKey
+                  "
+                  class="parameter-input-group"
+                >
+                  <label [for]="'provided-' + entry.key">
+                    {{ entry.key }}
+                    <span class="param-type"
+                      >({{ getInferredParamType(entry.value) }})</span
+                    >
+                  </label>
+                  <input
+                    [id]="'provided-' + entry.key"
+                    type="text"
+                    [(ngModel)]="
+                      msg.toolSuggestion.providedParameters[entry.key]
+                    "
+                    [placeholder]="'Enter ' + entry.key"
+                    class="param-input"
+                    (change)="
+                      updateProvidedParameterValue(
+                        msg.toolSuggestion,
+                        entry.key,
+                        msg.toolSuggestion.providedParameters[entry.key]
+                      )
+                    "
+                  />
+                </div>
               </div>
               <div
                 *ngIf="getProvidedParamsString(msg.toolSuggestion) === 'None'"
@@ -82,7 +121,10 @@
               <h4>Missing Parameters</h4>
               <div class="parameter-inputs">
                 <div
-                  *ngFor="let param of msg.toolSuggestion.missingParameters"
+                  *ngFor="
+                    let param of msg.toolSuggestion.missingParameters;
+                    trackBy: trackByParamName
+                  "
                   class="parameter-input-group"
                 >
                   <label [for]="param.name">

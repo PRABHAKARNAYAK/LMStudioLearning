@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { LexiumLogger } from "./services/LexiumLogger";
 import { MotionMasterClientFunctions } from "./controllers/MotionMasterClientFunctions";
+import { DiagnosticsDataService } from "./services/DiagnosticsDataService";
 
 // Helper function to poll for device discovery status
 async function pollDiscoveryStatus(baseUrl: string, timeoutMs: number, pollInterval: number): Promise<{ discoveredDevices: any[]; elapsed: number }> {
@@ -25,7 +26,7 @@ async function pollDiscoveryStatus(baseUrl: string, timeoutMs: number, pollInter
           isServerRunning: status?.isServerRunning,
           deviceCount: status?.discoveredDevices?.length || 0,
           hasDevices: (status?.discoveredDevices?.length || 0) > 0,
-        })
+        }),
       );
 
       // Check the API response for devices (fresh discovery results from this session)
@@ -65,7 +66,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     },
     {
       capabilities: { logging: {} },
-    }
+    },
   );
 
   let pmConfigRouteBaseUrl = `${baseUrl}/parameterConfig`;
@@ -80,7 +81,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async () => {
       const result = { ok: true, timestamp: new Date().toISOString() };
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -171,13 +172,13 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
                   message: errorMessage,
                 },
                 null,
-                2
+                2,
               ),
             },
           ],
         };
       }
-    }
+    },
   );
 
   server.registerTool(
@@ -192,7 +193,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/groupInfo/${encodeURIComponent(args.groupId)}`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -206,7 +207,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/startHoming`, { method: "POST" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -244,7 +245,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(positionConfig),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -280,7 +281,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(velocityConfig),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -314,7 +315,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(torqueConfig),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -328,7 +329,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/api/devices/${encodeURIComponent(args.deviceRef)}/releaseControl`, { method: "POST" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -342,7 +343,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/resetFault/`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -356,7 +357,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/api/devices/${encodeURIComponent(args.deviceRef)}/getCia402StateOfDevice`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -370,7 +371,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/startSystemIdentification`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -384,7 +385,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/getSystemIdentificationData`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -398,7 +399,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/getPositionTuningInfo`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -415,7 +416,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         method: "GET",
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -429,7 +430,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/getVelocityTuningInfo`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -443,7 +444,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/startVelocityAutoTuning/`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -457,7 +458,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/getTorqueTuningInfo`, { method: "GET" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -475,7 +476,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(args.parameters || {}),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -493,7 +494,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(args.parameters || {}),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -508,10 +509,10 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(
         `${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/getTuningTrajectoryInfo/profileType/${encodeURIComponent(args.profileType)}`,
-        { method: "GET" }
+        { method: "GET" },
       );
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -529,7 +530,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
         body: JSON.stringify(args.config || {}),
       });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -543,7 +544,7 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     async (args) => {
       const result = await callApi(`${pmConfigRouteBaseUrl}/devices/${encodeURIComponent(args.deviceRef)}/stopSignalGenerator`, { method: "POST" });
       return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
+    },
   );
 
   server.registerTool(
@@ -589,11 +590,64 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
           },
         };
       }
-    }
+    },
   );
 
-  LexiumLogger.info(`[MCP] Motion Master Client MCP Server initialized with 29 tools`);
-  console.log(`[MCP] Server initialization complete. Total tools registered: 29`);
+  server.registerTool(
+    "getErrorAndWarningInfo",
+    {
+      description:
+        "Retrieve detailed error and warning information for a given error ID. Accepts decimal error codes, hex codes (e.g. '0x1234' or '1234'), or error report strings. Returns all available details including explanation, remedy, group, and fault status.",
+      inputSchema: z.object({
+        errorId: z.string().describe("The error ID to look up. Can be a decimal error code, hex code (with or without 0x prefix), or error report string."),
+      }),
+    },
+    async (args) => {
+      try {
+        LexiumLogger.info(`[MCP] Looking up error/warning info for ID: ${args.errorId}`);
+        const service = DiagnosticsDataService.getInstance();
+        const result = service.getErrorInfoById(args.errorId);
+
+        if (!result) {
+          const notFoundText = `No error/warning information found for ID: ${args.errorId}`;
+          LexiumLogger.warn(`[MCP] ${notFoundText}`);
+          return {
+            content: [{ type: "text", text: notFoundText }],
+            structuredContent: { found: false, errorId: args.errorId },
+          };
+        }
+
+        let responseText = `Error/Warning Information\n\n`;
+        responseText += `ID: ${result.id}\n`;
+        responseText += `Error Code: ${result.errorCode}\n`;
+        responseText += `Error Report: ${result.errorReport}\n`;
+        responseText += `Group: ${result.group}\n`;
+        responseText += `Is Fault: ${result.isFault}\n`;
+        responseText += `Long Form: ${result.longForm}\n`;
+        responseText += `Explanation: ${result.explanation}\n`;
+        responseText += `Remedy: ${result.remedy}\n`;
+        if (result.errorCodeList && Array.isArray(result.errorCodeList) && result.errorCodeList.length > 0) {
+          responseText += `Error Code List: ${result.errorCodeList.join(", ")}\n`;
+        }
+
+        LexiumLogger.info(`[MCP] Found error info for ID: ${args.errorId}`);
+        return {
+          content: [{ type: "text", text: responseText }],
+          structuredContent: { found: true, ...result },
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        LexiumLogger.error(`[MCP] getErrorAndWarningInfo failed: ${errorMessage}`);
+        return {
+          content: [{ type: "text", text: `Failed to retrieve error info: ${errorMessage}` }],
+          structuredContent: { found: false, errorId: args.errorId, error: errorMessage },
+        };
+      }
+    },
+  );
+
+  LexiumLogger.info(`[MCP] Motion Master Client MCP Server initialized with 30 tools`);
+  console.log(`[MCP] Server initialization complete. Total tools registered: 30`);
   return server;
 }
 

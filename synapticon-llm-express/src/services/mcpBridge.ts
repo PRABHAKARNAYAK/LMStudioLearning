@@ -64,45 +64,7 @@ export class MCPBridge {
     try {
       console.log("[MCPBridge] Attempting to fetch tools from MCP server...");
 
-      // Initialize an MCP session to get tools list
-      const initResponse = await axios.post(
-        `${this.mcpBaseUrl}/mcp`,
-        {
-          jsonrpc: "2.0",
-          method: "initialize",
-          params: {
-            protocolVersion: "2024-11-05",
-            capabilities: {},
-            clientInfo: {
-              name: "mcpBridge",
-              version: "1.0.0",
-            },
-          },
-          id: 1,
-        },
-        {
-          timeout: 5000,
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json, text/event-stream",
-          },
-        },
-      );
-
-      // Extract session ID from response headers (case-insensitive)
-      let sessionId = initResponse.headers["mcp-session-id"] || initResponse.headers["Mcp-Session-Id"];
-      if (!sessionId && initResponse.headers) {
-        // Try to find session id in headers with any casing
-        for (const key of Object.keys(initResponse.headers)) {
-          if (key.toLowerCase() === "mcp-session-id") {
-            sessionId = initResponse.headers[key];
-            break;
-          }
-        }
-      }
-      if (!sessionId) {
-        throw new Error("Failed to obtain session ID from MCP server");
-      }
+      const sessionId = await this.createMcpSession();
 
       console.log(`[MCPBridge] MCP session established: ${sessionId}`);
 
@@ -146,6 +108,81 @@ export class MCPBridge {
       console.error("[MCPBridge] Error fetching tools from MCP server:", error);
       throw error;
     }
+  }
+
+  private async createMcpSession(): Promise<string> {
+    const initResponse = await axios.post(
+      `${this.mcpBaseUrl}/mcp`,
+      {
+        jsonrpc: "2.0",
+        method: "initialize",
+        params: {
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: {
+            name: "mcpBridge",
+            version: "1.0.0",
+          },
+        },
+        id: 1,
+      },
+      {
+        timeout: 5000,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+        },
+      },
+    );
+
+    // Extract session ID from response headers (case-insensitive)
+    let sessionId = initResponse.headers["mcp-session-id"] || initResponse.headers["Mcp-Session-Id"];
+    if (!sessionId && initResponse.headers) {
+      for (const key of Object.keys(initResponse.headers)) {
+        if (key.toLowerCase() === "mcp-session-id") {
+          sessionId = initResponse.headers[key];
+          break;
+        }
+      }
+    }
+
+    if (!sessionId) {
+      throw new Error("Failed to obtain session ID from MCP server");
+    }
+
+    return sessionId;
+  }
+
+  private async callToolViaMcpProtocol(toolName: string, args: Record<string, any>): Promise<any> {
+    const sessionId = await this.createMcpSession();
+
+    const response = await axios.post(
+      `${this.mcpBaseUrl}/mcp`,
+      {
+        jsonrpc: "2.0",
+        method: "tools/call",
+        params: {
+          name: toolName,
+          arguments: args,
+        },
+        id: 2,
+      },
+      {
+        timeout: 10000,
+        headers: {
+          "Content-Type": "application/json",
+          "mcp-session-id": sessionId,
+          Accept: "application/json, text/event-stream",
+        },
+      },
+    );
+
+    const responseData = response.data as any;
+    if (responseData?.error) {
+      throw new Error(responseData.error?.message || `MCP tools/call failed for tool: ${toolName}`);
+    }
+
+    return responseData?.result ?? responseData;
   }
 
   /**
@@ -443,6 +480,21 @@ export class MCPBridge {
           required: ["deviceRef"],
         },
       },
+      {
+        name: "getErrorAndWarningInfo",
+        description:
+          "Retrieve detailed error and warning information for a given error ID. Accepts decimal error codes, hex codes (for example '0x1234' or '1234'), or error report strings.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            errorId: {
+              type: "string",
+              description: "The error ID to look up. Can be a decimal code, hex code, or error report string.",
+            },
+          },
+          required: ["errorId"],
+        },
+      },
     ];
 
     // Store tools in the map
@@ -564,7 +616,8 @@ export class MCPBridge {
 
     const endpointBuilder = endpoints[toolName];
     if (!endpointBuilder) {
-      throw new Error(`No endpoint mapping for tool: ${toolName}`);
+      console.log(`[MCPBridge] No REST endpoint mapping for ${toolName}; falling back to MCP tools/call`);
+      return this.callToolViaMcpProtocol(toolName, args);
     }
 
     const url = endpointBuilder(args);
