@@ -495,6 +495,20 @@ export class MCPBridge {
           required: ["errorId"],
         },
       },
+      {
+        name: "getParameterInfo",
+        description: "Retrieve parameter information from Brake and Motor & Transmission data using a single criteria string (name, index/sub_index, or key=value criteria).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            criteria: {
+              type: "string",
+              description: "Lookup criteria string. Examples: 'Pull voltage', '#x2004:01', 'index=#x2004,sub_index=01', 'name=Max torque'.",
+            },
+          },
+          required: ["criteria"],
+        },
+      },
     ];
 
     // Store tools in the map

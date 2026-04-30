@@ -59,16 +59,18 @@ export class McpLlmService {
   /**
    * Analyze a question to identify tools and required parameters
    */
-  analyzeQuestion(question: string, ms = 15000): Observable<any> {
+  analyzeQuestion(question: string, ms = 30000): Observable<any> {
     const url = `http://localhost:3001/api/mcp/analyze-question`;
     const body = { question };
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     return this.http.post<any>(url, body, { headers }).pipe(
       timeout(ms),
-      catchError((err: HttpErrorResponse) => {
-        const msg =
-          err.error?.error || err.message || 'Failed to analyze question.';
+      catchError((err: any) => {
+        const isTimeout = err?.name === 'TimeoutError';
+        const msg = isTimeout
+          ? `Analyze request timed out after ${ms}ms. Please try again.`
+          : err?.error?.error || err?.message || 'Failed to analyze question.';
         return throwError(() => new Error(msg));
       }),
     );

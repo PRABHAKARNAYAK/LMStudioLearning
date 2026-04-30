@@ -3,6 +3,7 @@ import { z } from "zod";
 import { LexiumLogger } from "./services/LexiumLogger";
 import { MotionMasterClientFunctions } from "./controllers/MotionMasterClientFunctions";
 import { DiagnosticsDataService } from "./services/DiagnosticsDataService";
+import { ParameterManagerService } from "./services/ParameterManagerService";
 
 // Helper function to poll for device discovery status
 async function pollDiscoveryStatus(baseUrl: string, timeoutMs: number, pollInterval: number): Promise<{ discoveredDevices: any[]; elapsed: number }> {
@@ -646,8 +647,47 @@ export function createMcpServer(baseUrl: string = "http://localhost:8036") {
     },
   );
 
-  LexiumLogger.info(`[MCP] Motion Master Client MCP Server initialized with 30 tools`);
-  console.log(`[MCP] Server initialization complete. Total tools registered: 30`);
+  server.registerTool(
+    "getParameterInfo",
+    {
+      description:
+        "Retrieve parameter information from Brake and Motor & Transmission data. Accepts a single criteria string and supports name, index/sub_index, and key=value criteria.",
+      inputSchema: z.object({
+        criteria: z.string().describe("Lookup criteria string. Examples: 'Pull voltage', '#x2004:01', 'index=#x2004,sub_index=01', 'name=Max torque'"),
+      }),
+    },
+    async (args) => {
+      try {
+        LexiumLogger.info(`[MCP] Looking up parameter info with criteria: ${args.criteria}`);
+        const service = ParameterManagerService.getInstance();
+        const result = service.getParameterInfo(args.criteria);
+
+        if (!result) {
+          const notFoundText = `No parameter information found for criteria: ${args.criteria}`;
+          LexiumLogger.warn(`[MCP] ${notFoundText}`);
+          return {
+            content: [{ type: "text", text: notFoundText }],
+            structuredContent: { found: false, criteria: args.criteria },
+          };
+        }
+
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          structuredContent: { found: true, criteria: args.criteria, parameter: result },
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        LexiumLogger.error(`[MCP] getParameterInfo failed: ${errorMessage}`);
+        return {
+          content: [{ type: "text", text: `Failed to retrieve parameter info: ${errorMessage}` }],
+          structuredContent: { found: false, criteria: args.criteria, error: errorMessage },
+        };
+      }
+    },
+  );
+
+  LexiumLogger.info(`[MCP] Motion Master Client MCP Server initialized with 31 tools`);
+  console.log(`[MCP] Server initialization complete. Total tools registered: 31`);
   return server;
 }
 

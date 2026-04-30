@@ -64,13 +64,14 @@ function findMissingParameters(toolInfo: any, providedParams: Record<string, any
   return missingParams;
 }
 
-async function summarizeToolExecution(toolName: string, args: Record<string, any>, rawResult: any): Promise<string | null> {
+async function summarizeToolExecution(toolName: string, args: Record<string, any>, rawResult: any, timeoutMsOverride?: number): Promise<string | null> {
   try {
     const { base, key, model } = {
       base: process.env.LMSTUDIO_BASE_URL || "http://localhost:1234/v1",
       key: process.env.LMSTUDIO_API_KEY || "lm-studio",
       model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
     };
+    const summaryTimeoutMs = timeoutMsOverride ?? Number(process.env.LLM_SUMMARY_TIMEOUT_MS || 10000);
 
     const resultText = typeof rawResult === "string" ? rawResult : JSON.stringify(rawResult, null, 2);
 
@@ -94,19 +95,25 @@ async function summarizeToolExecution(toolName: string, args: Record<string, any
       },
     ];
 
+    const abortController = new AbortController();
+    const timeoutHandle = setTimeout(() => abortController.abort(), summaryTimeoutMs);
+
     const completionResponse = await fetch(`${base}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
+      signal: abortController.signal,
       body: JSON.stringify({
         model,
         messages,
         temperature: 0.2,
         max_tokens: 700,
       }),
-    }).then((r) => r.json());
+    })
+      .then((r) => r.json())
+      .finally(() => clearTimeout(timeoutHandle));
 
     const summary = completionResponse?.choices?.[0]?.message?.content;
     if (typeof summary === "string" && summary.trim().length > 0) {
@@ -115,9 +122,64 @@ async function summarizeToolExecution(toolName: string, args: Record<string, any
 
     return null;
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.warn("[MCP Route] Tool summarization timed out; returning raw tool result without summary");
+      return null;
+    }
+
     console.error("[MCP Route] Failed to summarize tool execution:", error);
     return null;
   }
+}
+
+const STRICT_SUMMARY_TOOLS = new Set(["getErrorAndWarningInfo", "getParameterInfo"]);
+
+function requiresStrictSummary(toolName: string): boolean {
+  return STRICT_SUMMARY_TOOLS.has(toolName);
+}
+
+function getSummaryTimeoutOverride(toolName: string): number | undefined {
+  if (!requiresStrictSummary(toolName)) {
+    return undefined;
+  }
+
+  return Number(process.env.LLM_STRICT_SUMMARY_TIMEOUT_MS || 30000);
+}
+
+type SummaryResolution = {
+  answer: string | null;
+  statusCode?: number;
+  error?: string;
+};
+
+async function resolveSummaryForTool(toolName: string, args: Record<string, any>, rawResult: any, summarizeWithLlm?: boolean): Promise<SummaryResolution> {
+  const isStrictSummaryTool = requiresStrictSummary(toolName);
+
+  if (isStrictSummaryTool && summarizeWithLlm === false) {
+    return {
+      answer: null,
+      statusCode: 400,
+      error: `summarizeWithLlm=false is not allowed for ${toolName}. This tool requires LM-based summarization.`,
+    };
+  }
+
+  const shouldSummarize = isStrictSummaryTool || summarizeWithLlm !== false;
+  if (!shouldSummarize) {
+    return { answer: null };
+  }
+
+  const timeoutOverride = getSummaryTimeoutOverride(toolName);
+  const answer = await summarizeToolExecution(toolName, args, rawResult, timeoutOverride);
+
+  if (isStrictSummaryTool && !answer) {
+    return {
+      answer: null,
+      statusCode: 504,
+      error: `LM summarization is required for ${toolName} but did not complete in time. ` + `Try again or increase LLM_STRICT_SUMMARY_TIMEOUT_MS.`,
+    };
+  }
+
+  return { answer };
 }
 
 /**
@@ -146,6 +208,7 @@ router.post("/analyze-question", async (req: Request, res: Response) => {
       key: process.env.LMSTUDIO_API_KEY || "lm-studio",
       model: process.env.LMSTUDIO_MODEL || "meta-llama-3.1-8b-instruct",
     };
+    const analyzeTimeoutMs = Number(process.env.LLM_ANALYZE_TIMEOUT_MS || 25000);
 
     // Get tools from MCP server
     const mcpTools = mcpBridge.getToolsForLLM();
@@ -206,19 +269,25 @@ If the user mentions a value, extract it.`;
     console.log(`[Analyze Route] Analyzing question: "${question}"`);
 
     // Call LLM to analyze the question
+    const abortController = new AbortController();
+    const timeoutHandle = setTimeout(() => abortController.abort(), analyzeTimeoutMs);
+
     const analysisResponse = await fetch(`${base}/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
       },
+      signal: abortController.signal,
       body: JSON.stringify({
         model,
         messages,
         temperature: 0.3,
         max_tokens: 500,
       }),
-    }).then((r) => r.json());
+    })
+      .then((r) => r.json())
+      .finally(() => clearTimeout(timeoutHandle));
 
     const analysisContent = analysisResponse?.choices?.[0]?.message?.content || "";
     console.log(`[Analyze Route] LLM analysis response:`, analysisContent);
@@ -304,6 +373,14 @@ If the user mentions a value, extract it.`;
       },
     });
   } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      console.warn("[Analyze Route] Analysis timed out while waiting for LM response");
+      return res.status(504).json({
+        success: false,
+        error: "Analysis timed out. Please try again, simplify the question, or increase LLM_ANALYZE_TIMEOUT_MS.",
+      });
+    }
+
     console.error("[Analyze Route] Error analyzing question:", error);
     return res.status(500).json({
       success: false,
@@ -592,14 +669,21 @@ router.post("/execute-tool", async (req: Request, res: Response) => {
     const result = await mcpBridge.executeTool(toolName, args);
 
     if (result.success) {
-      const shouldSummarize = summarizeWithLlm !== false;
-      const answer = shouldSummarize ? await summarizeToolExecution(toolName, args, result.result) : null;
+      const summaryResult = await resolveSummaryForTool(toolName, args, result.result, summarizeWithLlm);
+
+      if (summaryResult.statusCode) {
+        return res.status(summaryResult.statusCode).json({
+          success: false,
+          tool: toolName,
+          error: summaryResult.error,
+        });
+      }
 
       return res.json({
         success: true,
         tool: toolName,
         result: result.result,
-        answer,
+        answer: summaryResult.answer,
       });
     } else {
       return res.status(400).json({
